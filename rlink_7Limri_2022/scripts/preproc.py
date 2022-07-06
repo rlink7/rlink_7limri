@@ -8,7 +8,7 @@ from skimage.restoration import denoise_nl_means, estimate_sigma
 from nilearn import plotting
 from nipype.interfaces import cat12
 import subprocess
-import Limri
+import rlink_7Limri_2022
 
 
 def denoising_nlm(image, output):
@@ -125,6 +125,12 @@ def find_threshold(mask_MNI, li_mni_denoised):
     return threshold
 
 
+def bids_naming(path):
+    #target_anatLi = os.path.join()
+    return target_anatLi, target_anat, moving_file_Li
+
+
+
 def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
                      transfo_folder,
                      executable_cat12, standalone_cat12,
@@ -218,17 +224,22 @@ matlab_cmd = '/i2bm/local/cat12-standalone/run_spm12.sh /i2bm/local/cat12-standa
 spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True) 
 
 
-
+# inputs
 target_anatLi = "/volatile/7Li/data_test/08_09_21/data_rlink/anat_3TLi/01004RL20210430M033DT1Li_noPN_DIS2D_S007.nii"
 target_anat = "/volatile/7Li/data_test/08_09_21/data_rlink/anat_3T/01004RL20210430M033DT1_noPN_DIS2D_S009.nii"
 moving_file_Li = "/volatile/7Li/data_test/08_09_21/data_rlink/Li/01004RL20210430M03trufi_S005.nii"
 transfo_folder = "/volatile/7Li/data_test/08_09_21/transfo_rlink"
+# resources dir
+resource_dir = os.path.join(
+        os.path.dirname(rlink_7Limri_2022.__file__), "resources")
+matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
+# standalone cat12vbm matlab config
 executable_cat12 = "/i2bm/local/cat12-standalone/standalone/cat_standalone.sh"
 standalone_cat12 = "/i2bm/local/cat12-standalone"
 mcr_matlab = "/i2bm/local/cat12-standalone/mcr/v93"
-matlabbatch = "/volatile/7Li/Limri/Limri/resources/cat12vbm_matlabbatch.m"
-tpm_file = "/volatile/BRAINPREP/cat12/CAT12.7_r1743_R2017b_MCR_Linux/spm12_mcr/home/gaser/gaser/spm/spm12/tpm/TPM.nii"
-darteltpm_file = "/volatile/BRAINPREP/cat12/CAT12.7_r1743_R2017b_MCR_Linux/spm12_mcr/home/gaser/gaser/spm/spm12/toolbox/cat12/templates_volumes/Template_1_IXI555_MNI152.nii"
+# templates
+tpm_file = os.path.join(resource_dir, "TPM.nii")
+darteltpm_file = os.path.join(resource_dir, "Template_1_IXI555_MNI152.nii")
 
 
 
