@@ -5,14 +5,6 @@
 %-----------------------------------------------------------------------
 %% https://www.linuxquestions.org/questions/slackware-14/libreoffice-libfontconfig-so-1-undefined-symbol-ft_done_mm_var-4175665794/
 
-disp('brainprep CAT12 VBM')
-if isempty(which('spm')),
-     throw(MException('SPMCheck:NotFound', 'SPM not in matlab path'));
-end
-[name, version] = spm('ver');
-fprintf('SPM version: %s Release: %s\n',name, version);
-fprintf('SPM path: %s\n', which('spm'));
-
 matlabbatch{{1}}.spm.tools.cat.estwrite.data = {{
     {anat_file}
 }};
