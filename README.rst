@@ -64,45 +64,45 @@ Inputs
 ======
 
 If method = "one" :
-target_anatLi : path to the anatomic mri acquired with the Li coil. (T1w.nii)
-target_anat : path to the anatomic mri acquired with the H coil. (T1w.nii)
-moving_file_Li : path to the Li mri mri acquired with the Li coil. (lithium.nii)
-transfo_folder = path to the output folder.
+* target_anatLi : path to the anatomic mri acquired with the Li coil. (T1w.nii)
+* target_anat : path to the anatomic mri acquired with the H coil. (T1w.nii)
+* moving_file_Li : path to the Li mri mri acquired with the Li coil. (lithium.nii)
+* transfo_folder = path to the output folder.
 
 If method = "list" :
     If file_txt = 0:
-        path = path to the input folder. (common path before the regex)
-        liregex = regex of Li mri mri acquired with the Li coil. (lithium.nii)
-        anatliregex = regex of the anatomic mri acquired with the Li coil. (T1w.nii)
-        anatregex = regex of the anatomic mri acquired with the H coil. (T1w.nii)
+        * path = path to the input folder. (common path before the regex)
+        * liregex = regex of Li mri mri acquired with the Li coil. (lithium.nii)
+        * anatliregex = regex of the anatomic mri acquired with the Li coil. (T1w.nii)
+        * anatregex = regex of the anatomic mri acquired with the H coil. (T1w.nii)
     If file_txt = 1:
-        path_Li = Path to the Li.txt file : content : one row per subject.
-        path_anat_Li = Path to the anatLi.txt file : content : one row per subject.
-        path_anat = Path to the anatH.txt file : content : one row per subject.
+        * path_Li = Path to the Li.txt file : content : one row per subject.
+        * path_anat_Li = Path to the anatLi.txt file : content : one row per subject.
+        * path_anat = Path to the anatH.txt file : content : one row per subject.
 
 Preprocessing Pipeline Description
 ==================================
 
-Step1 : Estimate transformation
-=> linear transformation : anat Li coil => anat H coil.
-=> non linear transformation : anat H coil => MNI Template.
-=> Apply combinaison of transfomations.
-=> Apply denoising on Li.
-=> Save Li and anat H in the MNI space.
-=> Save plots.
+Estimate and apply transformation
+* linear transformation : anat Li coil => anat H coil.
+* non linear transformation : anat H coil => MNI Template.
+* Apply combinaison of transfomations.
+* Apply denoising on Li.
+* Save Li and anat H in the MNI space.
+* Save plots.
 
 Outputs
 =======
-anatLi_to_anat.mat => linear transfo matrix from anat mri Li coil to anat mri Hcoil
-inverse_anatLi_to_anat.mat		 
-Li_to_Lianat.mat => linear transfo matrix from Li mri Li coil to anat mri Licoil (head motions)
-inverse_Li_to_Lianat.mat
-li_modified_affine.nii => Li with modified affine (from linear registration above)
-wli_modified_affine.nii => Li mri Li coil in the MNI space.
-wt1_weighted_sagittal_1_0iso.nii => Anat mri H coil in the MNI space.
-sanlm_wli_modified_affine.nii => Denoised Li mri Li coil in the MNI space.
-figure_li_anat_MNI.png => plot of Li mri Li coil (threshold) and anat mri H coil
-figure_denoised_li_anat_MNI.png => plot of denoised Li mri Li coil (threshold) and anat mri H coil 	 
+* anatLi_to_anat.mat => linear transfo matrix from anat mri Li coil to anat mri Hcoil
+* inverse_anatLi_to_anat.mat		 
+* Li_to_Lianat.mat => linear transfo matrix from Li mri Li coil to anat mri Licoil (head motions)
+* inverse_Li_to_Lianat.mat
+* li_modified_affine.nii => Li with modified affine (from linear registration above)
+* wli_modified_affine.nii => Li mri Li coil in the MNI space.
+* wt1_weighted_sagittal_1_0iso.nii => Anat mri H coil in the MNI space.
+* sanlm_wli_modified_affine.nii => Denoised Li mri Li coil in the MNI space.
+* figure_li_anat_MNI.png => plot of Li mri Li coil (threshold) and anat mri H coil
+* figure_denoised_li_anat_MNI.png => plot of denoised Li mri Li coil (threshold) and anat mri H coil 	 
 	 
 	 
 
