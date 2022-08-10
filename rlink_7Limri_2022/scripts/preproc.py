@@ -48,8 +48,8 @@ def apply_defor(defor, moving_file):
     norm12.inputs.apply_to_files = moving_file
     norm12.inputs.deformation_file = defor
     # norm12.inputs.write_bounding_box = [[-78, -112, -70], [78, 76, 85]]
-    # norm12.inputs.write_bounding_box = [[-42, -68, -35], [78, 76, 85]]
-    # norm12.inputs.write_voxel_sizes = [1, 1, 1]
+    norm12.inputs.write_bounding_box = [[-90, -126, -72], [90, 90, 108]]
+    norm12.inputs.write_voxel_sizes = [1.5, 1.5, 1.5]
     norm12.inputs.write_interp = 4
     norm12.inputs.jobtype = 'write'
     norm12.inputs.use_mcr = True
@@ -65,6 +65,46 @@ def apply_transform(input, matrix, output):
     applymat.inputs.out_file = output
     applymat.run()
     return 0
+
+
+def resclice2(input, target):
+    r2ref = spmu.ResliceToReference()
+    r2ref.inputs.in_files = input
+    r2ref.inputs.target = target
+    r2ref.run()
+    return 0
+
+
+def resclice(input, target, output):
+    r2ref = spmu.Reslice()
+    r2ref.inputs.in_file = input
+    r2ref.inputs.space_defining = target
+    r2ref.inputs.out_file = output
+    r2ref.run()
+    return 0
+
+
+def scale(imfile, scaledfile, scale):
+    """ Scale the MRI image.
+    .. note:: This function is based on FSL.
+    Parameters
+    ----------
+    imfile: str
+        the input image.
+    scaledfile: str
+        the path to the scaled input image.
+    scale: int
+        the scale factor in all directions.
+    Returns
+    -------
+    scaledfile, trffile: str
+        the generated files.
+    """
+    trffile = scaledfile.split(".")[0] + ".txt"
+    cmd = ["flirt", "-in", imfile, "-ref", imfile, "-out",
+           scaledfile, "-applyisoxfm", str(scale), "-omat", trffile]
+    subprocess.check_call(cmd)
+    return scaledfile, trffile
 
 
 def dicom_to_nii(liste_filename):
@@ -106,17 +146,14 @@ def write_matlabbatch(template, nii_file, tpm_file, darteltpm_file, outfile):
 def plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname):
     li_img = nibabel.load(li_mni_denoised)
     bg_img = nibabel.load(anat_MNI)
-
     arr = li_img.get_fdata()
     arr[arr < threshold] = 0
     li_img = nibabel.Nifti1Image(arr, li_img.affine)
     display = plotting.plot_stat_map(li_img, bg_img, cut_coords=(-35, 54, -44),
-                           cmap=plotting.cm.black_blue)  # , output_file=".png"
+                                     cmap=plotting.cm.black_blue)
     display.savefig(figname)
-    plotting.show()
-    display.close()
-    
     # plotting.show()
+    display.close()
     return 0
 
 
@@ -156,34 +193,33 @@ def bids_naming(path, liregex, anatliregex, anatregex):
     for i in dico:
         if len(dico[i]) < 3:
             del dico[i]
-    print("number of subjects to preprocess : ", len(dico))
-        
+    print("number of subjects to preprocess : ", len(dico))      
     return dico
-
 
 
 def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
                      transfo_folder,
                      executable_cat12, standalone_cat12,
                      mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
-                     threshold):
+                     threshold=None):
     print("pipeline launch")
+    ''' transformations estimations'''
     # Li to anat Li
     coreg_path_Li = os.path.join(transfo_folder, "Li_to_Lianat.mat")
     if not os.path.exists(coreg_path_Li):
-        # print("coreg Li Lianat")
         coregistration(target_anatLi, moving_file_Li, coreg_path_Li)
     print("coreg Li Lianat ok")
+
     # anat Li to anat
     coreg_path_anat = os.path.join(transfo_folder, "anatLi_to_anat.mat")
     if not os.path.exists(coreg_path_anat):
-        # print("coreg anatLi anat")
         coregistration(target_anat, target_anatLi, coreg_path_anat)
     print("coreg anatLi anat ok")
 
+    # NL registration
     deformfiel_nl = target_anat.split(os.sep)
     deformfiel_nl.insert(-1, "mri")
-    deformfiel_nl[-1] = "y_{0}".format(deformfiel_nl[-1]) 
+    deformfiel_nl[-1] = "y_{0}".format(deformfiel_nl[-1])
     deformfiel_nl = os.sep.join(deformfiel_nl)
 
     if not os.path.exists(deformfiel_nl):
@@ -195,79 +231,88 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
         # anat to MNI
         print("launch car12vbm")
         subprocess.check_call([executable_cat12,
-                            "-s", standalone_cat12,
-                            "-m", mcr_matlab,
-                            "-b", batch_name])
+                               "-s", standalone_cat12,
+                               "-m", mcr_matlab,
+                               "-b", batch_name])
     print("cat12vbm ok")
-    ############################################################################
-    # create combine transformation
+
+    '''Transformations applications'''
     trans_Lianat = scipy.io.loadmat(os.path.join(transfo_folder,
                                     "inverse_Li_to_Lianat.mat"))
     trans_Lianat_mat = trans_Lianat['M']
-
     trans_anat = scipy.io.loadmat(os.path.join(transfo_folder,
                                   "inverse_anatLi_to_anat.mat"))
     trans_anat_mat = trans_anat['M']
+    # Linear registrations combinaison
+    mixte_mat = np.dot(trans_anat_mat, trans_Lianat_mat)
+    # Modify Li affine, linear registration
+    li_modified_affine = os.path.join(transfo_folder, "li_modified_affine.nii")
+    if not os.path.exists(li_modified_affine):
+        img = nibabel.load(moving_file_Li)
+        new_affine = np.dot(mixte_mat, img.affine)
+        normalized = nibabel.Nifti1Image(img.get_fdata(), new_affine)
+        nibabel.save(normalized, li_modified_affine)
+    print("Modified Li affine ok")
+    # Apply NL deformation on Li
+    Li_MNI = os.path.join(transfo_folder, "wli_modified_affine.nii")
+    if not os.path.exists(Li_MNI):
+        apply_defor(deformfiel_nl, li_modified_affine)
+    print("NL deformation applied on 7Li")
+    # Apply NL deformation on anat
+    anat_MNI_auto = os.path.join(os.path.dirname(target_anat),
+                                 "w{0}".format(os.path.basename(target_anat)))
+    anat_MNI = os.path.join(transfo_folder,
+                            "w{0}".format(os.path.basename(target_anat)))
+    if not os.path.exists(anat_MNI):
+        apply_defor(deformfiel_nl, target_anat)
+        subprocess.check_call(["mv", anat_MNI_auto, anat_MNI])
+    print("NL deformation applied on anat 3T")
+    # Apply denoising on Li MNI
+    name_denoised_Li = os.path.join(transfo_folder,
+                                    "sanlm_wli_modified_affine.nii")
+    if not os.path.exists(name_denoised_Li):
+        denoising_cat12(Li_MNI)
+    print("denoising finished : ", name_denoised_Li)
+    # MNI space shape checks
+    li_img = nibabel.load(name_denoised_Li)
+    bg_img = nibabel.load(anat_MNI)
+    print("Li MNI shape : ", li_img.get_fdata().shape)
+    print("Anat MNI shape : ", bg_img.get_fdata().shape)
+    assert li_img.get_fdata().shape ==\
+           (121, 145, 121), li_img.get_fdata().shape
+    assert li_img.get_fdata().shape ==\
+           (121, 145, 121), li_img.get_fdata().shape
+    # Threshold
+    if not threshold:
+        arr = li_img.get_fdata()
+        threshold = np.max(arr)*0.25
 
-    # mixte_mat = np.dot(trans_anat_mat, trans_Lianat_mat) # to determine
-    mixte_mat = trans_anat_mat
-    #### test no combine
-    img = nibabel.load(moving_file_Li)
-    new_affine = np.dot(mixte_mat, img.affine)
-    normalized = nibabel.Nifti1Image(img.get_fdata(), new_affine)
-
-    # img = nibabel.load(deformfiel_nl)
-    # new_affine = np.dot(mixte_mat, img.affine)
-    # normalized = nibabel.Nifti1Image(img.get_fdata(), new_affine)
-    nibabel.save(normalized, os.path.join(transfo_folder, "li_linearapply.nii"))
-    # defor = os.path.join(transfo_folder, "y_simple.nii")
-    defor = deformfiel_nl
-  
-    
-    new_name = os.path.join(transfo_folder, "li_linearapply.nii")
-    apply_defor(defor, new_name) 
-    # check point
-    Li_MNI = new_name.split(os.sep)
-    Li_MNI[-1] = "w{0}".format(Li_MNI[-1]) 
-    Li_MNI = os.sep.join(Li_MNI)
-    img_Li = nibabel.load(Li_MNI)
-    # assert img_Li.shape == (121, 145, 121), img_Li.shape  # (157, 189, 156)
-
-    apply_defor(defor, target_anat)
-
-    denoising_cat12(Li_MNI)
-    print("sanlm_wli_linearapply.nii")
-    name_denoised_Li = os.path.join(transfo_folder, "sanlm_wli_linearapply.nii")
-
-    # # find threshold
-    # threshold = find_threshold(mask_path_MNI, Li_MNI_denoised)
-        
-    # plot results
-    anat_MNI = target_anat.split(os.sep)
-    anat_MNI[-1] = "w{0}".format(anat_MNI[-1])
-    anat_MNI = os.sep.join(anat_MNI)
-    fignamenodenoi = os.path.join(transfo_folder, "figureliandanat")
-    fignamedenoi = os.path.join(transfo_folder, "figure_denoised_liandanat")
+    ''' Plot results'''
+    fignamenodenoi = os.path.join(transfo_folder, "figure_li_anat_MNI")
+    fignamedenoi = os.path.join(transfo_folder, "figure_denoised_li_anat_MNI")
     plot_anat_Li(name_denoised_Li, anat_MNI, threshold, fignamenodenoi)
     plot_anat_Li(Li_MNI, anat_MNI, threshold, fignamedenoi)
 
+    return 0
 
-################################################################################
+
+###############################################################################
 # LAUNCH
 # initialization
-matlab_cmd = '/i2bm/local/cat12-standalone/run_spm12.sh /i2bm/local/cat12-standalone/mcr/v93/ script'
-# matlab_cmd = '/i2bm/local/spm12-standalone/run_spm12.sh /i2bm/local/spm12-standalone/mcr/v713/ script'
-# matlab_cmd = '/neurospin/local/bin/matlab-R2019a'
-spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True) 
+matlab_cmd = "/i2bm/local/cat12-standalone/run_spm12.sh"\
+             " /i2bm/local/cat12-standalone/mcr/v93/ script"
+spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True)
 
 # standalone cat12vbm matlab config
 executable_cat12 = "/i2bm/local/cat12-standalone/standalone/cat_standalone.sh"
 standalone_cat12 = "/i2bm/local/cat12-standalone"
 mcr_matlab = "/i2bm/local/cat12-standalone/mcr/v93"
 # templates
-tpm_file = "/i2bm/local/cat12-standalone/spm12_mcr/home/gaser/gaser/spm/spm12/tpm/TPM.nii"
-darteltpm_file = "/i2bm/local/cat12-standalone/spm12_mcr/home/gaser/gaser/spm/spm12/toolbox/"\
-                "cat12/templates_volumes/Template_1_IXI555_MNI152.nii"
+tpm_file = "/i2bm/local/cat12-standalone/spm12_mcr/"\
+           "home/gaser/gaser/spm/spm12/tpm/TPM.nii"
+darteltpm_file = "/i2bm/local/cat12-standalone/spm12_mcr/"\
+                 "home/gaser/gaser/spm/spm12/toolbox/"\
+                 "cat12/templates_volumes/Template_1_IXI555_MNI152.nii"
 
 # resources dir
 resource_dir = os.path.join(
@@ -276,61 +321,62 @@ matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
 
 # options
 # method : one or list
-method = "list"
+method = "one"
 # launch: local or cluster
 launch = "local"
 # threshold 20 or 200
-threshold = 200
+threshold = 20
 
 if method == "list":
+    # inputs
     path = "/neurospin/ciclops/projects/BIPLi7/BIDS/derivatives/Limri_preproc"
     liregex = "sub-*/ses-*/lithium/sub-*_ses-*_acq-trufi_limri.nii"
     anatliregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-7T_T1w.nii"
     anatregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-3T_T1w.nii"
     dico = bids_naming(path, liregex, anatliregex, anatregex)
-    
+    # launch
     if launch == "local":
         for i in dico:
             if i == "sub-20181207":
                 print("launch {0}".format(i))
-                transfo_folder = os.path.join(os.path.dirname(dico[i][0]), "transfo")
+                transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
+                                              "transfo")
                 subprocess.check_call(["mkdir", "-p", transfo_folder])
-                target_anatLi = dico[i][0]
+                target_anatLi = dico[i][1]
                 target_anat = dico[i][2]
-                moving_file_Li = dico[i][1]
-                name_denoised_Li = os.path.join(transfo_folder, "sanlm_wli_linearapply.nii")
-                if not os.path.exists(name_denoised_Li):  # do not redoo if it s already done
-                    pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
-                                    transfo_folder,
-                                    executable_cat12, standalone_cat12,
-                                    mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
-                                    threshold)
+                moving_file_Li = dico[i][0]
+                pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
+                                 transfo_folder,
+                                 executable_cat12, standalone_cat12,
+                                 mcr_matlab, matlabbatch, tpm_file,
+                                 darteltpm_file)
     elif launch == "cluster":
         pass
 
 elif method == "one":
     # inputs
-    # target_anatLi = "/volatile/7Li/data_test/08_09_21/data_rlink/anat_3TLi/01004RL20210430M033DT1Li_noPN_DIS2D_S007.nii"
-    # target_anat = "/volatile/7Li/data_test/08_09_21/data_rlink/anat_3T/01004RL20210430M033DT1_noPN_DIS2D_S009.nii"
-    # moving_file_Li = "/volatile/7Li/data_test/08_09_21/data_rlink/Li/01004RL20210430M03trufi_S005.nii"
-    # transfo_folder = "/volatile/7Li/data_test/08_09_21/transfo_rlink"
-
-    target_anatLi = "/neurospin/psy_sbox/temp_julie/Fawzi/example/sub-20181116/Anatomy7T/t1_mpr_tra_iso1_0mm.nii"
-    target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/sub-20181116/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
-    moving_file_Li = "/neurospin/psy_sbox/temp_julie/Fawzi/example/sub-20181116/Trufi/01-Raw/TRUFI_1000_1.nii"
+    target_anatLi = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
+                    "/sub-20181116/Anatomy7T/t1_mpr_tra_iso1_0mm.nii"
+    target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/"\
+                  "sub-20181116/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
+    moving_file_Li = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
+                     "/sub-20181116/Trufi/01-Raw/TRUFI_1000_1.nii"
     transfo_folder = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo"
-
+    # launch
     pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
-                    transfo_folder,
-                    executable_cat12, standalone_cat12,
-                    mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
-                    threshold)
+                     transfo_folder,
+                     executable_cat12, standalone_cat12,
+                     mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
+                     threshold)
 
 elif method == "plot":
     transfo_folder = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo"
-    target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/sub-20181116/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
-    li_mni_denoised = os.path.join(transfo_folder, "sanlm_wli_linearapply.nii")
+    target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/sub-20181116"\
+                  "/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
+    li_mni_denoised = os.path.join(transfo_folder,
+                                   "sanlm_wli_modified_affine.nii")
+    figname = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo/figure1"
     anat_MNI = target_anat.split(os.sep)
     anat_MNI[-1] = "w{0}".format(anat_MNI[-1])
     anat_MNI = os.sep.join(anat_MNI)
-    plot_anat_Li(li_mni_denoised, anat_MNI, threshold)
+    plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname)
