@@ -64,10 +64,10 @@ Inputs
 ======
 
 **If method = "one" :**
-* target_anatLi : path to the anatomic mri acquired with the Li coil. (T1w.nii)
-* target_anat : path to the anatomic mri acquired with the H coil. (T1w.nii)
-* moving_file_Li : path to the Li mri mri acquired with the Li coil. (lithium.nii)
-* transfo_folder = path to the output folder.
+    * target_anatLi : path to the anatomic mri acquired with the Li coil. (T1w.nii)
+    * target_anat : path to the anatomic mri acquired with the H coil. (T1w.nii)
+    * moving_file_Li : path to the Li mri mri acquired with the Li coil. (lithium.nii)
+    * transfo_folder = path to the output folder.
 
 
 **If method = "list" :**
