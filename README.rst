@@ -69,6 +69,7 @@ If method = "one" :
 * moving_file_Li : path to the Li mri mri acquired with the Li coil. (lithium.nii)
 * transfo_folder = path to the output folder.
 
+======
 If method = "list" :
     If file_txt = 0:
         * path = path to the input folder. (common path before the regex)
@@ -83,7 +84,6 @@ If method = "list" :
 Preprocessing Pipeline Description
 ==================================
 
-Estimate and apply transformation
 * linear transformation : anat Li coil => anat H coil.
 * non linear transformation : anat H coil => MNI Template.
 * Apply combinaison of transfomations.
