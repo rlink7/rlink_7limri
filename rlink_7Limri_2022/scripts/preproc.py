@@ -157,6 +157,68 @@ def plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname):
     return 0
 
 
+def createPBS(prefix_PBS, c, target_anatLi, target_anat, moving_file_Li,
+              transfo_folder,
+              executable_cat12, standalone_cat12,
+              mcr_matlab, matlabbatch, tpm_file,
+              darteltpm_file):
+    """Write the PBS file at the path prefix_PBS
+    """
+    subprocess.check_call(["mkdir", "-p", prefix_PBS])
+    PBS_filename = os.path.join(prefix_PBS, "PBSimg{0}.sh".format(c))
+
+    with open(PBS_filename, "w") as file:
+        ligne1 = "#!/bin/sh"
+        ligne2 = "#PBS -q Cati_long"  # Cati_long Nspin_bigM, Nspin_long
+        ligne3 = "#PBS -l walltime=80:00:00"  # 200:00:00
+        ligne4 = "#PBS -N limri{NUMBER}".format(NUMBER=c)
+        ligne5 = "#PBS -o {0}/stdout.txt".format(prefix_PBS)
+        ligne6 = "#PBS -e {0}/stderr.txt".format(prefix_PBS)
+        ligne7 = ("singularity run "
+                    "--bind {BIND1} "
+                    "--bind {BIND2} "
+                    "--cleanenv {IMG} "
+                    "brainprep quasiraw "
+                    "-a {FILEPATH} "
+                    "-m {MASK} "
+                    "-o {OUTPATH} "
+                    "-V 2").format(BIND1=input_folder,
+                                    BIND2=output_folder,
+                                    IMG=image_sing,
+                                    FILEPATH=i,
+                                    MASK=liste_sub[c],
+                                    OUTPATH=destination)
+        file.write(ligne1)
+        file.write("\n")
+        file.write(ligne2)
+        file.write("\n")
+        file.write(ligne3)
+        file.write("\n")
+        file.write(ligne4)
+        file.write("\n")
+        file.write(ligne5)
+        file.write("\n")
+        file.write(ligne6)
+        file.write("\n")
+        file.write(ligne7)
+
+    return PBS_filename
+
+
+def launch_cluster(liste_PBS):
+    for i in liste_PBS:
+        cmd = ["qsub", i]
+        subprocess.Popen(cmd)
+    return 0
+
+
+def get_list_from_txt(path):
+    with open(path) as flux:
+        lignes = flux.readlines()
+    lignes = [i.replace("\n", "") for i in lignes]
+    return lignes
+
+
 def find_threshold(mask_MNI, li_mni_denoised):
     li_img = nibabel.load(li_mni_denoised)
     mask_img = nibabel.load(mask_MNI)
@@ -167,17 +229,8 @@ def find_threshold(mask_MNI, li_mni_denoised):
     return threshold
 
 
-def bids_naming(path, liregex, anatliregex, anatregex):
-    target_anatLi = os.path.join(path, anatliregex)
-    list_anat_Li = glob.glob(target_anatLi)
-    assert len(list_anat_Li) != 0, target_anatLi
-    target_anat = os.path.join(path, anatregex)
-    list_anat = glob.glob(target_anat)
-    assert len(list_anat) != 0, target_anat
-    moving_file_Li = os.path.join(path, liregex)
-    list_Li = glob.glob(moving_file_Li)
-    assert len(list_Li) != 0, moving_file_Li
-    list_sub = [i.split(os.sep)[-4] for i in list_Li]
+def bids_naming(list_sub, list_Li, list_anat_Li, list_anat):
+    
     dico = {}
     for c, i in enumerate(list_sub):
         dico[i] = []
@@ -193,7 +246,7 @@ def bids_naming(path, liregex, anatliregex, anatregex):
     for i in dico:
         if len(dico[i]) < 3:
             del dico[i]
-    print("number of subjects to preprocess : ", len(dico))      
+    print("number of subjects to preprocess : ", len(dico))     
     return dico
 
 
@@ -244,7 +297,8 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
                                   "inverse_anatLi_to_anat.mat"))
     trans_anat_mat = trans_anat['M']
     # Linear registrations combinaison
-    mixte_mat = np.dot(trans_anat_mat, trans_Lianat_mat)
+    # mixte_mat = np.dot(trans_anat_mat, trans_Lianat_mat)
+    mixte_mat = trans_anat_mat
     # Modify Li affine, linear registration
     li_modified_affine = os.path.join(transfo_folder, "li_modified_affine.nii")
     if not os.path.exists(li_modified_affine):
@@ -288,10 +342,10 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
         threshold = np.max(arr)*0.25
 
     ''' Plot results'''
-    fignamenodenoi = os.path.join(transfo_folder, "figure_li_anat_MNI")
+    figname_no_denoi = os.path.join(transfo_folder, "figure_li_anat_MNI")
     fignamedenoi = os.path.join(transfo_folder, "figure_denoised_li_anat_MNI")
-    plot_anat_Li(name_denoised_Li, anat_MNI, threshold, fignamenodenoi)
-    plot_anat_Li(Li_MNI, anat_MNI, threshold, fignamedenoi)
+    plot_anat_Li(name_denoised_Li, anat_MNI, threshold, fignamedenoi)
+    plot_anat_Li(Li_MNI, anat_MNI, threshold, figname_no_denoi)
 
     return 0
 
@@ -321,35 +375,55 @@ matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
 
 # options
 # method : one or list
-method = "one"
+method = "list"
 # launch: local or cluster
 launch = "local"
+# use a file.txt or not : 1 or 0
+file_txt = 0
 # threshold 20 or 200
 threshold = 20
 
 if method == "list":
     # inputs
-    path = "/neurospin/ciclops/projects/BIPLi7/BIDS/derivatives/Limri_preproc"
-    liregex = "sub-*/ses-*/lithium/sub-*_ses-*_acq-trufi_limri.nii"
-    anatliregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-7T_T1w.nii"
-    anatregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-3T_T1w.nii"
-    dico = bids_naming(path, liregex, anatliregex, anatregex)
+    if file_txt:
+        path_Li = "/neurospin/tmp/jv261711/Fawzi/Li.txt"
+        path_anat_Li = "/neurospin/tmp/jv261711/Fawzi/anat_Li.txt"
+        path_anat = "/neurospin/tmp/jv261711/Fawzi/anat.txt"
+        list_Li = get_list_from_txt(path_Li)
+        list_anat_Li = get_list_from_txt(path_anat_Li)
+        list_anat = get_list_from_txt(path_anat)
+    else:
+        path = "/neurospin/ciclops/projects/BIPLi7/"\
+               "BIDS/derivatives/Limri_preproc"
+        liregex = "sub-*/ses-*/lithium/sub-*_ses-*_acq-trufi_limri.nii"
+        anatliregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-7T_T1w.nii"
+        anatregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-3T_T1w.nii"
+        target_anatLi = os.path.join(path, anatliregex)
+        list_anat_Li = glob.glob(target_anatLi)
+        assert len(list_anat_Li) != 0, target_anatLi
+        target_anat = os.path.join(path, anatregex)
+        list_anat = glob.glob(target_anat)
+        assert len(list_anat) != 0, target_anat
+        moving_file_Li = os.path.join(path, liregex)
+        list_Li = glob.glob(moving_file_Li)
+        assert len(list_Li) != 0, moving_file_Li
+    list_sub = [i.split(os.sep)[-4] for i in list_Li]
+    dico = bids_naming(list_sub, list_Li, list_anat_Li, list_anat)
     # launch
     if launch == "local":
         for i in dico:
-            if i == "sub-20181207":
-                print("launch {0}".format(i))
-                transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
-                                              "transfo")
-                subprocess.check_call(["mkdir", "-p", transfo_folder])
-                target_anatLi = dico[i][1]
-                target_anat = dico[i][2]
-                moving_file_Li = dico[i][0]
-                pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
-                                 transfo_folder,
-                                 executable_cat12, standalone_cat12,
-                                 mcr_matlab, matlabbatch, tpm_file,
-                                 darteltpm_file)
+            print("launch {0}".format(i))
+            transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
+                                            "transfo")
+            subprocess.check_call(["mkdir", "-p", transfo_folder])
+            target_anatLi = dico[i][1]
+            target_anat = dico[i][2]
+            moving_file_Li = dico[i][0]
+            pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
+                             transfo_folder,
+                             executable_cat12, standalone_cat12,
+                             mcr_matlab, matlabbatch, tpm_file,
+                             darteltpm_file)
     elif launch == "cluster":
         pass
 
