@@ -38,6 +38,7 @@ def coregistration(target_file, moving_file, coreg_path):
     coreg.inputs.target = target_file
     coreg.inputs.moving = moving_file
     coreg.inputs.mat = coreg_path
+    coreg.inputs.use_mcr = True
     coreg.run()
     return 0
 
@@ -356,7 +357,7 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
 matlab_cmd = "/i2bm/local/cat12-standalone/run_spm12.sh"\
              " /i2bm/local/cat12-standalone/mcr/v93/ script"
 spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True)
-
+print("spm mcr version", spm.SPMCommand().version)
 # standalone cat12vbm matlab config
 executable_cat12 = "/i2bm/local/cat12-standalone/standalone/cat_standalone.sh"
 standalone_cat12 = "/i2bm/local/cat12-standalone"
@@ -375,7 +376,7 @@ matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
 
 # options
 # method : one or list
-method = "list"
+method = "one"
 # launch: local or cluster
 launch = "local"
 # use a file.txt or not : 1 or 0
