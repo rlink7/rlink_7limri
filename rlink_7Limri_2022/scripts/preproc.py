@@ -10,6 +10,7 @@ from nipype.interfaces import cat12
 import subprocess
 import rlink_7Limri_2022
 import glob
+import argparse
 
 
 def denoising_nlm(image, output):
@@ -158,7 +159,8 @@ def plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname):
     return 0
 
 
-def createPBS(prefix_PBS, c, target_anatLi, target_anat, moving_file_Li,
+def createPBS(prefix_PBS, c, target_Lianat, target_anat,
+              moving_file_Li,
               transfo_folder,
               executable_cat12, standalone_cat12,
               mcr_matlab, matlabbatch, tpm_file,
@@ -170,25 +172,21 @@ def createPBS(prefix_PBS, c, target_anatLi, target_anat, moving_file_Li,
 
     with open(PBS_filename, "w") as file:
         ligne1 = "#!/bin/sh"
-        ligne2 = "#PBS -q Cati_long"  # Cati_long Nspin_bigM, Nspin_long
+        ligne2 = "#PBS -q Nspin_long"  # Cati_long Nspin_bigM, Nspin_long
         ligne3 = "#PBS -l walltime=80:00:00"  # 200:00:00
         ligne4 = "#PBS -N limri{NUMBER}".format(NUMBER=c)
         ligne5 = "#PBS -o {0}/stdout.txt".format(prefix_PBS)
         ligne6 = "#PBS -e {0}/stderr.txt".format(prefix_PBS)
-        ligne7 = ("singularity run "
-                    "--bind {BIND1} "
-                    "--bind {BIND2} "
-                    "--cleanenv {IMG} "
-                    "brainprep quasiraw "
-                    "-a {FILEPATH} "
-                    "-m {MASK} "
-                    "-o {OUTPATH} "
-                    "-V 2").format(BIND1=input_folder,
-                                    BIND2=output_folder,
-                                    IMG=image_sing,
-                                    FILEPATH=i,
-                                    MASK=liste_sub[c],
-                                    OUTPATH=destination)
+        ligne7 = ("python3 "
+                  "/volatile/7Li/git/rlink_7Limri_2022/rlink_7Limri_2022"\
+                  "/scripts/preproc.py " 
+                  "--method regex "
+                  "--Li {Li} "
+                  "--Lianat {Lianat} "
+                  "--anat {anat} "
+                  "--launch local"
+                  ).format(Li=moving_file_Li,
+                           Lianat=target_Lianat, anat=target_anat)
         file.write(ligne1)
         file.write("\n")
         file.write(ligne2)
@@ -206,10 +204,9 @@ def createPBS(prefix_PBS, c, target_anatLi, target_anat, moving_file_Li,
     return PBS_filename
 
 
-def launch_cluster(liste_PBS):
-    for i in liste_PBS:
-        cmd = ["qsub", i]
-        subprocess.Popen(cmd)
+def launch_cluster(PBS_filename):
+    cmd = ["qsub", PBS_filename]
+    subprocess.Popen(cmd)
     return 0
 
 
@@ -230,7 +227,7 @@ def find_threshold(mask_MNI, li_mni_denoised):
     return threshold
 
 
-def bids_naming(list_sub, list_Li, list_anat_Li, list_anat):
+def dico_from_bids(list_sub, list_Li, list_anat_Li, list_anat):
     
     dico = {}
     for c, i in enumerate(list_sub):
@@ -352,106 +349,247 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
 
 
 ###############################################################################
-# LAUNCH
-# initialization
-matlab_cmd = "/i2bm/local/cat12-standalone/run_spm12.sh"\
-             " /i2bm/local/cat12-standalone/mcr/v93/ script"
-spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True)
-print("spm mcr version", spm.SPMCommand().version)
-# standalone cat12vbm matlab config
-executable_cat12 = "/i2bm/local/cat12-standalone/standalone/cat_standalone.sh"
-standalone_cat12 = "/i2bm/local/cat12-standalone"
-mcr_matlab = "/i2bm/local/cat12-standalone/mcr/v93"
-# templates
-tpm_file = "/i2bm/local/cat12-standalone/spm12_mcr/"\
-           "home/gaser/gaser/spm/spm12/tpm/TPM.nii"
-darteltpm_file = "/i2bm/local/cat12-standalone/spm12_mcr/"\
-                 "home/gaser/gaser/spm/spm12/toolbox/"\
-                 "cat12/templates_volumes/Template_1_IXI555_MNI152.nii"
-
-# resources dir
-resource_dir = os.path.join(
-        os.path.dirname(rlink_7Limri_2022.__file__), "resources")
-matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
-
-# options
-# method : one or list
-method = "one"
-# launch: local or cluster
-launch = "local"
-# use a file.txt or not : 1 or 0
-file_txt = 0
-# threshold 20 or 200
-threshold = 20
-
-if method == "list":
+def main():
+    # LAUNCH EXAMPLE
     # inputs
-    if file_txt:
-        path_Li = "/neurospin/tmp/jv261711/Fawzi/Li.txt"
-        path_anat_Li = "/neurospin/tmp/jv261711/Fawzi/anat_Li.txt"
-        path_anat = "/neurospin/tmp/jv261711/Fawzi/anat.txt"
-        list_Li = get_list_from_txt(path_Li)
-        list_anat_Li = get_list_from_txt(path_anat_Li)
-        list_anat = get_list_from_txt(path_anat)
-    else:
-        path = "/neurospin/ciclops/projects/BIPLi7/"\
-               "BIDS/derivatives/Limri_preproc"
-        liregex = "sub-*/ses-*/lithium/sub-*_ses-*_acq-trufi_limri.nii"
-        anatliregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-7T_T1w.nii"
-        anatregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-3T_T1w.nii"
-        target_anatLi = os.path.join(path, anatliregex)
-        list_anat_Li = glob.glob(target_anatLi)
-        assert len(list_anat_Li) != 0, target_anatLi
-        target_anat = os.path.join(path, anatregex)
-        list_anat = glob.glob(target_anat)
-        assert len(list_anat) != 0, target_anat
-        moving_file_Li = os.path.join(path, liregex)
-        list_Li = glob.glob(moving_file_Li)
-        assert len(list_Li) != 0, moving_file_Li
-    list_sub = [i.split(os.sep)[-4] for i in list_Li]
-    dico = bids_naming(list_sub, list_Li, list_anat_Li, list_anat)
-    # launch
+    #     target_anatLi = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
+    #                     "/sub-20181116/Anatomy7T/t1_mpr_tra_iso1_0mm.nii"
+    #     target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/"\
+    #                 "sub-20181116/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
+    #     moving_file_Li = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
+    #                     "/sub-20181116/Trufi/01-Raw/TRUFI_1000_1.nii"
+    #   transfo_folder = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo"
+    #     # launch
+    #     pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
+    #                      transfo_folder,
+    #                      executable_cat12, standalone_cat12,
+    #                      mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
+    #                      threshold)
+    #  path = "/neurospin/ciclops/projects/BIPLi7/"\
+    #         "BIDS/derivatives/Limri_preproc"
+    #     liregex = "sub-*/ses-*/lithium/sub-*_ses-*_acq-trufi_limri.nii"
+    #     anatliregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-7T_T1w.nii"
+    #     anatregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-3T_T1w.nii"
+
+    # PARSER
+    parser = argparse.ArgumentParser("Launch 7Li preprocessing")
+    # required
+    parser.add_argument('--method',
+                        choices=["regex", "file_txt", "plot"],
+                        help='regex : images inputs from regex'
+                             ' or exact filenames\n'
+                             'file_txt : images inputs from a text file,'
+                             ' one line per subject\n'
+                             'plot : to plot an existing preprocessing',
+                        required=True,
+                        type=str)
+    parser.add_argument('--Li',
+                        help='if method is regex : regex of the Li images\n'
+                             'if method is file_txt : path to the text file'
+                             'containing paths of Li images',
+                        required=True,
+                        type=str)
+    parser.add_argument('--Lianat',
+                        help='if method is regex : regex of the anat images'
+                             ' acquired with Li coil\n'
+                             'if method is file_txt : path to the text file'
+                             'containing paths of anat images'
+                             ' acquired with Li coil',
+                        required=True,
+                        type=str)
+    parser.add_argument('--anat',
+                        help='if method is regex : regex of the anat images'
+                             ' acquired with H coil\n'
+                             'if method is file_txt : path to the text file'
+                             'containing paths of anat images'
+                             ' acquired with H coil',
+                        required=True,
+                        type=str)
+    parser.add_argument('--launch',
+                        help='cluster : launch on alambic\n'
+                             'local : launch on your computer',
+                        choices=["cluster", "local"],
+                        required=True,
+                        type=str)
+    
+    # optionnal
+    parser.add_argument('--Li_file_txt',
+                        help='Path to a text file containing the paths'
+                             ' (one line per image path) of the Li mri.',
+                        type=str)
+    parser.add_argument('--Lianat_file_txt',
+                        help='Path to a text file containing the paths'
+                             ' (one line per image path) of the anat mri'
+                             ' with an Li coil.',
+                        type=str)
+    parser.add_argument('--anat_file_txt',
+                        help='Path to a text file containing the paths'
+                             ' (one line per image path) of the anat mri.'
+                             ' with an H coil',
+                        type=str)
+    parser.add_argument('--executable_cat12',
+                        help='Path to the executable_cat12.\n'
+                             'example : [...]/cat12-standalone/'
+                             'standalone/cat_standalone.sh',
+                        default='/i2bm/local/cat12-standalone/'
+                                'standalone/cat_standalone.sh',
+                        type=str)
+    parser.add_argument('--standalone_cat12',
+                        help='cat12 standalone folder.\n'
+                             'example : [...]/cat12-standalone',
+                        default='/i2bm/local/cat12-standalone',
+                        type=str,)
+    parser.add_argument('--mcr_matlab',
+                        help='Path to the mcr_matlab.\n'
+                             'example : [...]/cat12-standalone/mcr/v93',
+                        default='/i2bm/local/cat12-standalone/mcr/v93',
+                        type=str)
+    parser.add_argument('--tpm_file',
+                        help='Path to the tpm_file cat12vbm file.\n'
+                             'example : cat12-standalone/spm12_mcr/'
+                             'home/gaser/gaser/spm/spm12/tpm/TPM.nii',
+                        default='/i2bm/local/cat12-standalone/spm12_mcr/'
+                                'home/gaser/gaser/spm/spm12/tpm/TPM.nii',
+                        type=str)
+    parser.add_argument('--darteltpm_file',
+                        help='Path to the dartel tpm file.\n'
+                             'example : [...]/cat12-standalone/spm12_mcr/'
+                             'home/gaser/gaser/spm/spm12/toolbox/cat12/'
+                             'templates_volumes/Template_1_IXI555_MNI152.nii',
+                        default='/i2bm/local/cat12-standalone/spm12_mcr/'
+                                'home/gaser/gaser/spm/spm12/toolbox/cat12/tem'
+                                'plates_volumes/Template_1_IXI555_MNI152.nii',
+                        type=str)
+    parser.add_argument('--threshold',
+                        help="threshold",
+                        default=None,
+                        type=int)
+    options = parser.parse_args()
+    # required
+    method = options.method
+    Li = options.Li
+    Lianat = options.Lianat
+    anat = options.anat
+    # initialization
+    matlab_cmd = options.matlab_cmd
+    spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True)
+    print("spm mcr version", spm.SPMCommand().version)
+    # standalone cat12vbm matlab config
+    executable_cat12 = options.executable_cat12
+    standalone_cat12 = options.standalone_cat12
+    mcr_matlab = options.mcr_matlab
+    # templates
+    tpm_file = options.tpm_file
+    darteltpm_file = options.darteltpm_file
+    # resources dir
+    resource_dir = os.path.join(
+            os.path.dirname(rlink_7Limri_2022.__file__), "resources")
+    matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
+
+    # options
+    # method : one or list
+    method = options.method
+    # launch: local or cluster
+    launch = options.launch
+    # use a file.txt
+    Li_file_txt = options.Li_file_txt
+    Lianat_file_txt = options.Lianat_file_txt
+    anat_file_txt = options.anat_file_txt
+    # threshold 20 or 200
+    threshold = options.threshold
+
+    # method choice
+    if method == "file_txt":
+        # check if there is all required files
+        if options.Li_file_txt and (options.Lianat_file_txt is None
+                                    or options.anat_file_txt is None):
+            parser.error("--options.Li_file_txt requires"
+                         " --options.Lianat_file_txt and"
+                         " --options.anat_file_txt.")
+        elif options.Lianat_file_txt and (options.Li_file_txt is None
+                                        or options.anat_file_txt is None):
+            parser.error("--options.Lianat_file_txt requires"
+                         " --options.Li_file_txt and"
+                         " --options.anat_file_txt.")
+        elif options.anat_file_txt and (options.Lianat_file_txt is None
+                                        or options.Li_file_txt is None):
+            parser.error("--options.anat_file_txt requires"
+                         " --options.Lianat_file_txt and"
+                         " --options.Li_file_txt.")
+        list_Li = get_list_from_txt(Li_file_txt)
+        list_Lianat = get_list_from_txt(Lianat_file_txt)
+        list_anat = get_list_from_txt(anat_file_txt)
+        sub_Li = [os.path.basename(path).split("_")[0] for path in list_Li]
+        sub_Lianat = [os.path.basename(path).split("_")[0] for path
+                      in list_Lianat]
+        sub_anat = [os.path.basename(path).split("_")[0] for path in list_anat]
+        assert len(list_Li) == len(list_Lianat) == len(list_anat),\
+                                                      (len(list_Li),
+                                                       len(list_Lianat),
+                                                       len(list_anat))
+        assert sub_Li == sub_Lianat == sub_anat, "each text file must"\
+                                                 " have the same order"
+
+    elif method == "regex":
+        # modify here too
+        list_Li = glob.glob(Li)
+        list_Lianat = glob.glob(Lianat)
+        list_anat = glob.glob(anat)
+        assert len(list_Li) != 0, list_Li
+        assert len(list_Lianat) != 0, list_Lianat
+        assert len(list_anat) != 0, list_anat
+        list_sub = [os.path.basename(path).split("_")[0] for path in list_Li]
+        dico = dico_from_bids(list_sub, list_Li, list_Lianat, list_anat)
+   
+    elif method == "plot":
+        # works only with one subject
+        output = transfo_folder = os.path.dirname(Li)
+        li_mni_denoised = os.path.join(output,
+                                       "sanlm_wli_modified_affine.nii")
+        figname = os.path.join(output, "snap_Li_preproc_results")
+        anat_MNI = anat.split(os.sep)
+        anat_MNI[-1] = "w{0}".format(anat_MNI[-1])
+        anat_MNI = os.sep.join(anat_MNI)
+        if not threshold:
+            li_img = nibabel.load(li_mni_denoised)
+            arr = li_img.get_fdata()
+            threshold = np.max(arr)*0.25
+        plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname)
+
+    # launch choice
     if launch == "local":
         for i in dico:
             print("launch {0}".format(i))
             transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
-                                            "transfo")
-            subprocess.check_call(["mkdir", "-p", transfo_folder])
-            target_anatLi = dico[i][1]
+                                          "transfo")
+            os.makedirs(transfo_folder)
+            target_Lianat = dico[i][1]
             target_anat = dico[i][2]
             moving_file_Li = dico[i][0]
-            pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
+            pipeline_lithium(target_Lianat, target_anat, moving_file_Li,
                              transfo_folder,
                              executable_cat12, standalone_cat12,
                              mcr_matlab, matlabbatch, tpm_file,
                              darteltpm_file)
     elif launch == "cluster":
-        pass
+        for c, i in enumerate(dico):
+            prefix_PBS = "/neurospin/psy_sbox/temp_julie/Fawzi/"\
+                            "jobs_alambic/job_{0}".format(dico[i][0])
+            transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
+                                          "transfo")
+            os.makedirs(transfo_folder)
+            target_Lianat = dico[i][1]
+            target_anat = dico[i][2]
+            moving_file_Li = dico[i][0]
+            PBS_filename = createPBS(prefix_PBS, c, target_Lianat, target_anat,
+                                     moving_file_Li,
+                                     transfo_folder,
+                                     executable_cat12, standalone_cat12,
+                                     mcr_matlab, matlabbatch, tpm_file,
+                                     darteltpm_file)
+            launch_cluster(PBS_filename) 
 
-elif method == "one":
-    # inputs
-    target_anatLi = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
-                    "/sub-20181116/Anatomy7T/t1_mpr_tra_iso1_0mm.nii"
-    target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/"\
-                  "sub-20181116/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
-    moving_file_Li = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
-                     "/sub-20181116/Trufi/01-Raw/TRUFI_1000_1.nii"
-    transfo_folder = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo"
-    # launch
-    pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
-                     transfo_folder,
-                     executable_cat12, standalone_cat12,
-                     mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
-                     threshold)
+    
 
-elif method == "plot":
-    transfo_folder = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo"
-    target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/sub-20181116"\
-                  "/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
-    li_mni_denoised = os.path.join(transfo_folder,
-                                   "sanlm_wli_modified_affine.nii")
-    figname = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo/figure1"
-    anat_MNI = target_anat.split(os.sep)
-    anat_MNI[-1] = "w{0}".format(anat_MNI[-1])
-    anat_MNI = os.sep.join(anat_MNI)
-    plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname)
+if __name__ == "__main__":
+    main()
