@@ -1,6 +1,7 @@
 import nibabel
 import os
 import scipy.io
+import nipype
 import nipype.interfaces.spm as spm
 import nipype.interfaces.spm.utils as spmu
 import numpy as np
@@ -178,13 +179,13 @@ def createPBS(prefix_PBS, c, target_Lianat, target_anat,
         ligne5 = "#PBS -o {0}/stdout.txt".format(prefix_PBS)
         ligne6 = "#PBS -e {0}/stderr.txt".format(prefix_PBS)
         ligne7 = ("python3 "
-                  "/volatile/7Li/git/rlink_7Limri_2022/rlink_7Limri_2022"\
+                  "/neurospin/tmp/jv261711/git/rlink_7Limri_2022/rlink_7Limri_2022"\
                   "/scripts/preproc.py " 
-                  "--method regex "
-                  "--Li {Li} "
-                  "--Lianat {Lianat} "
-                  "--anat {anat} "
-                  "--launch local"
+                  "--method 'regex' "
+                  "--Li '{Li}' "
+                  "--Lianat '{Lianat}' "
+                  "--anat '{anat}' "
+                  "--launch 'local'"
                   ).format(Li=moving_file_Li,
                            Lianat=target_Lianat, anat=target_anat)
         file.write(ligne1)
@@ -234,15 +235,17 @@ def dico_from_bids(list_sub, list_Li, list_anat_Li, list_anat):
         dico[i] = []
         dico[i].append(list_Li[c])
     for i in list_anat_Li:
-        sub = i.split(os.sep)[-4]
+        sub = os.path.basename(i).split("_")[0]
         if sub in dico:
             dico[sub].append(i)
     for i in list_anat:
-        sub = i.split(os.sep)[-4]
+        sub = os.path.basename(i).split("_")[0]
         if sub in dico:
             dico[sub].append(i)
-    for i in dico:
+    tmp_dico = dico.copy()
+    for i in tmp_dico:
         if len(dico[i]) < 3:
+            print("no all needed data for {0}".format(i))
             del dico[i]
     print("number of subjects to preprocess : ", len(dico))     
     return dico
@@ -471,9 +474,11 @@ def main():
     Lianat = options.Lianat
     anat = options.anat
     # initialization
-    matlab_cmd = options.matlab_cmd
+    matlab_cmd = "/i2bm/local/cat12-standalone/run_spm12.sh"\
+             " /i2bm/local/cat12-standalone/mcr/v93/ script"
     spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True)
     print("spm mcr version", spm.SPMCommand().version)
+    print(nipype.__version__)
     # standalone cat12vbm matlab config
     executable_cat12 = options.executable_cat12
     standalone_cat12 = options.standalone_cat12
@@ -531,7 +536,6 @@ def main():
                                                  " have the same order"
 
     elif method == "regex":
-        # modify here too
         list_Li = glob.glob(Li)
         list_Lianat = glob.glob(Lianat)
         list_anat = glob.glob(anat)
@@ -539,11 +543,12 @@ def main():
         assert len(list_Lianat) != 0, list_Lianat
         assert len(list_anat) != 0, list_anat
         list_sub = [os.path.basename(path).split("_")[0] for path in list_Li]
+        print(list_sub)
         dico = dico_from_bids(list_sub, list_Li, list_Lianat, list_anat)
    
     elif method == "plot":
         # works only with one subject
-        output = transfo_folder = os.path.dirname(Li)
+        output = os.path.dirname(Li)
         li_mni_denoised = os.path.join(output,
                                        "sanlm_wli_modified_affine.nii")
         figname = os.path.join(output, "snap_Li_preproc_results")
@@ -555,14 +560,16 @@ def main():
             arr = li_img.get_fdata()
             threshold = np.max(arr)*0.25
         plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname)
+    
+    print("data selection ok")
 
     # launch choice
     if launch == "local":
         for i in dico:
             print("launch {0}".format(i))
             transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
-                                          "transfo")
-            os.makedirs(transfo_folder)
+                                          "transfo_{0}".format(i))
+            subprocess.check_call(["mkdir", "-p", transfo_folder])
             target_Lianat = dico[i][1]
             target_anat = dico[i][2]
             moving_file_Li = dico[i][0]
@@ -574,10 +581,10 @@ def main():
     elif launch == "cluster":
         for c, i in enumerate(dico):
             prefix_PBS = "/neurospin/psy_sbox/temp_julie/Fawzi/"\
-                            "jobs_alambic/job_{0}".format(dico[i][0])
+                            "jobs_alambic/job_{0}".format(c)
             transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
                                           "transfo")
-            os.makedirs(transfo_folder)
+            subprocess.check_call(["mkdir", "-p", transfo_folder])
             target_Lianat = dico[i][1]
             target_anat = dico[i][2]
             moving_file_Li = dico[i][0]
@@ -587,9 +594,9 @@ def main():
                                      executable_cat12, standalone_cat12,
                                      mcr_matlab, matlabbatch, tpm_file,
                                      darteltpm_file)
-            launch_cluster(PBS_filename) 
+            # launch_cluster(PBS_filename)
 
-    
+   
 
 if __name__ == "__main__":
     main()
