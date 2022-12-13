@@ -10,7 +10,6 @@ from nilearn import plotting
 from nipype.interfaces import cat12
 import subprocess
 import rlink_7Limri_2022
-import glob
 import argparse
 
 
@@ -160,64 +159,6 @@ def plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname):
     return 0
 
 
-def createPBS(prefix_PBS, c, target_Lianat, target_anat,
-              moving_file_Li,
-              transfo_folder,
-              executable_cat12, standalone_cat12,
-              mcr_matlab, matlabbatch, tpm_file,
-              darteltpm_file):
-    """Write the PBS file at the path prefix_PBS
-    """
-    subprocess.check_call(["mkdir", "-p", prefix_PBS])
-    PBS_filename = os.path.join(prefix_PBS, "PBSimg{0}.sh".format(c))
-
-    with open(PBS_filename, "w") as file:
-        ligne1 = "#!/bin/sh"
-        ligne2 = "#PBS -q Nspin_long"  # Cati_long Nspin_bigM, Nspin_long
-        ligne3 = "#PBS -l walltime=80:00:00"  # 200:00:00
-        ligne4 = "#PBS -N limri{NUMBER}".format(NUMBER=c)
-        ligne5 = "#PBS -o {0}/stdout.txt".format(prefix_PBS)
-        ligne6 = "#PBS -e {0}/stderr.txt".format(prefix_PBS)
-        ligne7 = ("python3 "
-                  "/neurospin/tmp/jv261711/git/rlink_7Limri_2022/rlink_7Limri_2022"\
-                  "/scripts/preproc.py " 
-                  "--method 'regex' "
-                  "--Li '{Li}' "
-                  "--Lianat '{Lianat}' "
-                  "--anat '{anat}' "
-                  "--launch 'local'"
-                  ).format(Li=moving_file_Li,
-                           Lianat=target_Lianat, anat=target_anat)
-        file.write(ligne1)
-        file.write("\n")
-        file.write(ligne2)
-        file.write("\n")
-        file.write(ligne3)
-        file.write("\n")
-        file.write(ligne4)
-        file.write("\n")
-        file.write(ligne5)
-        file.write("\n")
-        file.write(ligne6)
-        file.write("\n")
-        file.write(ligne7)
-
-    return PBS_filename
-
-
-def launch_cluster(PBS_filename):
-    cmd = ["qsub", PBS_filename]
-    subprocess.Popen(cmd)
-    return 0
-
-
-def get_list_from_txt(path):
-    with open(path) as flux:
-        lignes = flux.readlines()
-    lignes = [i.replace("\n", "") for i in lignes]
-    return lignes
-
-
 def find_threshold(mask_MNI, li_mni_denoised):
     li_img = nibabel.load(li_mni_denoised)
     mask_img = nibabel.load(mask_MNI)
@@ -228,49 +169,62 @@ def find_threshold(mask_MNI, li_mni_denoised):
     return threshold
 
 
-def dico_from_bids(list_sub, list_Li, list_anat_Li, list_anat):
-    
-    dico = {}
-    for c, i in enumerate(list_sub):
-        dico[i] = []
-        dico[i].append(list_Li[c])
-    for i in list_anat_Li:
-        sub = os.path.basename(i).split("_")[0]
-        if sub in dico:
-            dico[sub].append(i)
-    for i in list_anat:
-        sub = os.path.basename(i).split("_")[0]
-        if sub in dico:
-            dico[sub].append(i)
-    tmp_dico = dico.copy()
-    for i in tmp_dico:
-        if len(dico[i]) < 3:
-            print("no all needed data for {0}".format(i))
-            del dico[i]
-    print("number of subjects to preprocess : ", len(dico))     
-    return dico
-
-
 def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
                      transfo_folder,
                      executable_cat12, standalone_cat12,
                      mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
-                     threshold=None):
+                     threshold=None, bfc=True):
     print("pipeline launch")
-    ''' transformations estimations'''
-    # Li to anat Li
-    coreg_path_Li = os.path.join(transfo_folder, "Li_to_Lianat.mat")
-    if not os.path.exists(coreg_path_Li):
-        coregistration(target_anatLi, moving_file_Li, coreg_path_Li)
-    print("coreg Li Lianat ok")
+    if bfc:
+        ''' biasfield correction'''
+        # anat
+        bfcfile_anat = target_anat.replace(".nii", "_bfc.nii")
+        bfcfile_anat = os.path.join(transfo_folder,
+                                    os.path.basename(bfcfile_anat))
+        if not os.path.exists(bfcfile_anat):
+            bfcfile_anat, _ = biasfield(target_anat, bfcfile_anat,
+                                        maskfile=None,
+                                        nb_iterations=50,
+                                        convergence_threshold=0.001,
+                                        bspline_grid=(1, 1, 1),
+                                        shrink_factor=1,
+                                        bspline_order=3,
+                                        histogram_sharpening=(0.15, 0.01, 200),
+                                        check_pkg_version=False)
+            target_anat = bfcfile_anat
+        print("anat biasfield correction ok")
+        # anat Li
+        bfcfile_anatLi = target_anat.replace(".nii", "_bfc.nii")
+        bfcfile_anatLi = os.path.join(transfo_folder,
+                                      os.path.basename(bfcfile_anatLi))
+        if not os.path.exists(bfcfile_anatLi):
+            bfcfile_anatLi, _ = biasfield(target_anat, bfcfile_anatLi,
+                                          maskfile=None,
+                                          nb_iterations=50,
+                                          convergence_threshold=0.001,
+                                          bspline_grid=(1, 1, 1),
+                                          shrink_factor=1,
+                                          bspline_order=3,
+                                          histogram_sharpening=(0.15,
+                                                                0.01,
+                                                                200),
+                                          check_pkg_version=False)
+            target_anatLi = bfcfile_anatLi
+        print("anatLi biasfield correction ok")
 
+    ''' transformations estimations'''
+    # # Li to anat Li # does not work
+    # coreg_path_Li = os.path.join(transfo_folder, "Li_to_Lianat.mat")
+    # if not os.path.exists(coreg_path_Li):
+    #     coregistration(target_anatLi, moving_file_Li, coreg_path_Li)
+    # print("coreg Li Lianat ok")
     # anat Li to anat
     coreg_path_anat = os.path.join(transfo_folder, "anatLi_to_anat.mat")
     if not os.path.exists(coreg_path_anat):
         coregistration(target_anat, target_anatLi, coreg_path_anat)
     print("coreg anatLi anat ok")
 
-    # NL registration
+    # Non Linear registration
     deformfiel_nl = target_anat.split(os.sep)
     deformfiel_nl.insert(-1, "mri")
     deformfiel_nl[-1] = "y_{0}".format(deformfiel_nl[-1])
@@ -291,9 +245,9 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
     print("cat12vbm ok")
 
     '''Transformations applications'''
-    trans_Lianat = scipy.io.loadmat(os.path.join(transfo_folder,
-                                    "inverse_Li_to_Lianat.mat"))
-    trans_Lianat_mat = trans_Lianat['M']
+    # trans_Lianat = scipy.io.loadmat(os.path.join(transfo_folder,
+    #                                 "inverse_Li_to_Lianat.mat"))
+    # trans_Lianat_mat = trans_Lianat['M']
     trans_anat = scipy.io.loadmat(os.path.join(transfo_folder,
                                   "inverse_anatLi_to_anat.mat"))
     trans_anat_mat = trans_anat['M']
@@ -308,6 +262,15 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
         normalized = nibabel.Nifti1Image(img.get_fdata(), new_affine)
         nibabel.save(normalized, li_modified_affine)
     print("Modified Li affine ok")
+    # Modify Li affine, linear registration
+    anatli_modified_affine = os.path.join(transfo_folder,
+                                          "anatli_modified_affine.nii")
+    if not os.path.exists(anatli_modified_affine):
+        img = nibabel.load(target_anatLi)
+        new_affine = np.dot(mixte_mat, img.affine)
+        normalized = nibabel.Nifti1Image(img.get_fdata(), new_affine)
+        nibabel.save(normalized, anatli_modified_affine)
+    print("Modified anatLi affine ok")
     # Apply NL deformation on Li
     Li_MNI = os.path.join(transfo_folder, "wli_modified_affine.nii")
     if not os.path.exists(Li_MNI):
@@ -320,8 +283,16 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
                             "w{0}".format(os.path.basename(target_anat)))
     if not os.path.exists(anat_MNI):
         apply_defor(deformfiel_nl, target_anat)
-        subprocess.check_call(["mv", anat_MNI_auto, anat_MNI])
+        if anat_MNI_auto != anat_MNI:
+            subprocess.check_call(["mv", anat_MNI_auto, anat_MNI])
     print("NL deformation applied on anat 3T")
+    # Apply NL deformation on Lianat
+    Lianat_MNI_auto = os.path.join(os.path.dirname(anatli_modified_affine),
+                                   "w{0}".format(os.path.basename
+                                                 (anatli_modified_affine)))
+    if not os.path.exists(Lianat_MNI_auto):
+        apply_defor(deformfiel_nl, anatli_modified_affine)
+    print("NL deformation applied on anat Li")
     # Apply denoising on Li MNI
     name_denoised_Li = os.path.join(transfo_folder,
                                     "sanlm_wli_modified_affine.nii")
@@ -351,85 +322,102 @@ def pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
     return 0
 
 
+def biasfield(imfile, bfcfile, maskfile=None, nb_iterations=50,
+              convergence_threshold=0.001, bspline_grid=(1, 1, 1),
+              shrink_factor=1, bspline_order=3,
+              histogram_sharpening=(0.15, 0.01, 200), check_pkg_version=False):
+    """ Perform MRI bias field correction using N4 algorithm.
+    .. note:: This function is based on ANTS.
+    Parameters
+    ----------
+    imfile: str
+        the input image.
+    bfcfile: str
+        the bias fieled corrected file.
+    maskfile: str, default None
+        the brain mask image.
+    nb_iterations: int, default 50
+        Maximum number of iterations at each level of resolution. Larger
+        values will increase execution time, but may lead to better results.
+    convergence_threshold: float, default 0.001
+        Stopping criterion for the iterative bias estimation. Larger values
+        will lead to smaller execution time.
+    bspline_grid: int, default (1, 1, 1)
+        Resolution of the initial bspline grid defined as a sequence of three
+        numbers. The actual resolution will be defined by adding the bspline
+        order (default is 3) to the resolution in each dimension specified
+        here. For example, 1,1,1 will result in a 4x4x4 grid of control points.
+        This parameter may need to be adjusted based on your input image.
+        In the multi-resolution N4 framework, the resolution of the bspline
+        grid at subsequent iterations will be doubled. The number of
+        resolutions is implicitly defined by Number of iterations parameter
+        (the size of this list is the number of resolutions).
+    shrink_factor: int, default 1
+        Defines how much the image should be upsampled before estimating the
+        inhomogeneity field. Increase if you want to reduce the execution
+        time. 1 corresponds to the original resolution. Larger values will
+        significantly reduce the computation time.
+    bspline_order: int, default 3
+        Order of B-spline used in the approximation. Larger values will lead
+        to longer execution times, may result in overfitting and poor result.
+    histogram_sharpening: 3-uplate, default (0.15, 0.01, 200)
+        A vector of up to three values. Non-zero values correspond to Bias
+        Field Full Width at Half Maximum, Wiener filter noise, and Number of
+        histogram bins.
+    check_pkg_version: bool, default False
+        optionally check the package version using dpkg.
+    Returns
+    -------
+    bfcfile, bffile: str
+        the generatedd files.
+    """
+    ndim = 3
+    bspline_grid = [str(e) for e in bspline_grid]
+    histogram_sharpening = [str(e) for e in histogram_sharpening]
+    bffile = bfcfile.split(".")[0] + "_field.nii.gz"
+    cmd = [
+        "N4BiasFieldCorrection",
+        "-d", str(ndim),
+        "-i", imfile,
+        "-s", str(shrink_factor),
+        "-b", "[{0}, {1}]".format("x".join(bspline_grid), bspline_order),
+        "-c", "[{0}, {1}]".format(
+            "x".join([str(nb_iterations)] * 4), convergence_threshold),
+        "-t", "[{0}]".format(", ".join(histogram_sharpening)),
+        "-o", "[{0}, {1}]".format(bfcfile, bffile),
+        "-v"]
+    if maskfile is not None:
+        cmd += ["-x", maskfile]
+    subprocess.check_call(cmd)
+    return bfcfile, bffile
+
+
 ###############################################################################
 def main():
-    # LAUNCH EXAMPLE
-    # inputs
-    #     target_anatLi = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
-    #                     "/sub-20181116/Anatomy7T/t1_mpr_tra_iso1_0mm.nii"
-    #     target_anat = "/neurospin/psy_sbox/temp_julie/Fawzi/example/"\
-    #                 "sub-20181116/Anatomy3T/t1_weighted_sagittal_1_0iso.nii"
-    #     moving_file_Li = "/neurospin/psy_sbox/temp_julie/Fawzi/example"\
-    #                     "/sub-20181116/Trufi/01-Raw/TRUFI_1000_1.nii"
-    #   transfo_folder = "/neurospin/psy_sbox/temp_julie/Fawzi/example/transfo"
-    #     # launch
-    #     pipeline_lithium(target_anatLi, target_anat, moving_file_Li,
-    #                      transfo_folder,
-    #                      executable_cat12, standalone_cat12,
-    #                      mcr_matlab, matlabbatch, tpm_file, darteltpm_file,
-    #                      threshold)
-    #  path = "/neurospin/ciclops/projects/BIPLi7/"\
-    #         "BIDS/derivatives/Limri_preproc"
-    #     liregex = "sub-*/ses-*/lithium/sub-*_ses-*_acq-trufi_limri.nii"
-    #     anatliregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-7T_T1w.nii"
-    #     anatregex = "sub-*/ses-*/anat/sub-*_ses-*_acq-3T_T1w.nii"
 
     # PARSER
     parser = argparse.ArgumentParser("Launch 7Li preprocessing")
     # required
-    parser.add_argument('--method',
-                        choices=["regex", "file_txt", "plot"],
-                        help='regex : images inputs from regex'
-                             ' or exact filenames\n'
-                             'file_txt : images inputs from a text file,'
-                             ' one line per subject\n'
-                             'plot : to plot an existing preprocessing',
-                        required=True,
-                        type=str)
     parser.add_argument('--Li',
-                        help='if method is regex : regex of the Li images\n'
-                             'if method is file_txt : path to the text file'
-                             'containing paths of Li images',
+                        help='path to Li image',
                         required=True,
                         type=str)
     parser.add_argument('--Lianat',
-                        help='if method is regex : regex of the anat images'
-                             ' acquired with Li coil\n'
-                             'if method is file_txt : path to the text file'
-                             'containing paths of anat images'
+                        help='path of anat image'
                              ' acquired with Li coil',
                         required=True,
                         type=str)
     parser.add_argument('--anat',
-                        help='if method is regex : regex of the anat images'
-                             ' acquired with H coil\n'
-                             'if method is file_txt : path to the text file'
-                             'containing paths of anat images'
+                        help='path of anat image'
                              ' acquired with H coil',
                         required=True,
                         type=str)
-    parser.add_argument('--launch',
-                        help='cluster : launch on alambic\n'
-                             'local : launch on your computer',
-                        choices=["cluster", "local"],
+    parser.add_argument('--output',
+                        help='path the preprocessing outputs',
                         required=True,
                         type=str)
-    
+   
     # optionnal
-    parser.add_argument('--Li_file_txt',
-                        help='Path to a text file containing the paths'
-                             ' (one line per image path) of the Li mri.',
-                        type=str)
-    parser.add_argument('--Lianat_file_txt',
-                        help='Path to a text file containing the paths'
-                             ' (one line per image path) of the anat mri'
-                             ' with an Li coil.',
-                        type=str)
-    parser.add_argument('--anat_file_txt',
-                        help='Path to a text file containing the paths'
-                             ' (one line per image path) of the anat mri.'
-                             ' with an H coil',
-                        type=str)
     parser.add_argument('--executable_cat12',
                         help='Path to the executable_cat12.\n'
                              'example : [...]/cat12-standalone/'
@@ -469,13 +457,13 @@ def main():
                         type=int)
     options = parser.parse_args()
     # required
-    method = options.method
     Li = options.Li
     Lianat = options.Lianat
     anat = options.anat
+    output = options.output
     # initialization
     matlab_cmd = "/i2bm/local/cat12-standalone/run_spm12.sh"\
-             " /i2bm/local/cat12-standalone/mcr/v93/ script"
+                 " /i2bm/local/cat12-standalone/mcr/v93/ script"
     spm.SPMCommand.set_mlab_paths(matlab_cmd=matlab_cmd, use_mcr=True)
     print("spm mcr version", spm.SPMCommand().version)
     print(nipype.__version__)
@@ -491,112 +479,20 @@ def main():
             os.path.dirname(rlink_7Limri_2022.__file__), "resources")
     matlabbatch = os.path.join(resource_dir, "cat12vbm_matlabbatch.m")
 
-    # options
-    # method : one or list
-    method = options.method
-    # launch: local or cluster
-    launch = options.launch
-    # use a file.txt
-    Li_file_txt = options.Li_file_txt
-    Lianat_file_txt = options.Lianat_file_txt
-    anat_file_txt = options.anat_file_txt
     # threshold 20 or 200
     threshold = options.threshold
 
-    # method choice
-    if method == "file_txt":
-        # check if there is all required files
-        if options.Li_file_txt and (options.Lianat_file_txt is None
-                                    or options.anat_file_txt is None):
-            parser.error("--options.Li_file_txt requires"
-                         " --options.Lianat_file_txt and"
-                         " --options.anat_file_txt.")
-        elif options.Lianat_file_txt and (options.Li_file_txt is None
-                                        or options.anat_file_txt is None):
-            parser.error("--options.Lianat_file_txt requires"
-                         " --options.Li_file_txt and"
-                         " --options.anat_file_txt.")
-        elif options.anat_file_txt and (options.Lianat_file_txt is None
-                                        or options.Li_file_txt is None):
-            parser.error("--options.anat_file_txt requires"
-                         " --options.Lianat_file_txt and"
-                         " --options.Li_file_txt.")
-        list_Li = get_list_from_txt(Li_file_txt)
-        list_Lianat = get_list_from_txt(Lianat_file_txt)
-        list_anat = get_list_from_txt(anat_file_txt)
-        sub_Li = [os.path.basename(path).split("_")[0] for path in list_Li]
-        sub_Lianat = [os.path.basename(path).split("_")[0] for path
-                      in list_Lianat]
-        sub_anat = [os.path.basename(path).split("_")[0] for path in list_anat]
-        assert len(list_Li) == len(list_Lianat) == len(list_anat),\
-                                                      (len(list_Li),
-                                                       len(list_Lianat),
-                                                       len(list_anat))
-        assert sub_Li == sub_Lianat == sub_anat, "each text file must"\
-                                                 " have the same order"
+    # computation
+    sub = os.path.basename(Li).split("_")[0]
+    print("launch {0}".format(sub))
+    transfo_folder = os.path.join(output, "preproc-lithium_{0}".format(sub))
+    subprocess.check_call(["mkdir", "-p", transfo_folder])
+    pipeline_lithium(Lianat, anat, Li,
+                     transfo_folder,
+                     executable_cat12, standalone_cat12,
+                     mcr_matlab, matlabbatch, tpm_file,
+                     darteltpm_file, threshold, bfc=True)
 
-    elif method == "regex":
-        list_Li = glob.glob(Li)
-        list_Lianat = glob.glob(Lianat)
-        list_anat = glob.glob(anat)
-        assert len(list_Li) != 0, list_Li
-        assert len(list_Lianat) != 0, list_Lianat
-        assert len(list_anat) != 0, list_anat
-        list_sub = [os.path.basename(path).split("_")[0] for path in list_Li]
-        print(list_sub)
-        dico = dico_from_bids(list_sub, list_Li, list_Lianat, list_anat)
-   
-    elif method == "plot":
-        # works only with one subject
-        output = os.path.dirname(Li)
-        li_mni_denoised = os.path.join(output,
-                                       "sanlm_wli_modified_affine.nii")
-        figname = os.path.join(output, "snap_Li_preproc_results")
-        anat_MNI = anat.split(os.sep)
-        anat_MNI[-1] = "w{0}".format(anat_MNI[-1])
-        anat_MNI = os.sep.join(anat_MNI)
-        if not threshold:
-            li_img = nibabel.load(li_mni_denoised)
-            arr = li_img.get_fdata()
-            threshold = np.max(arr)*0.25
-        plot_anat_Li(li_mni_denoised, anat_MNI, threshold, figname)
-    
-    print("data selection ok")
-
-    # launch choice
-    if launch == "local":
-        for i in dico:
-            print("launch {0}".format(i))
-            transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
-                                          "transfo_{0}".format(i))
-            subprocess.check_call(["mkdir", "-p", transfo_folder])
-            target_Lianat = dico[i][1]
-            target_anat = dico[i][2]
-            moving_file_Li = dico[i][0]
-            pipeline_lithium(target_Lianat, target_anat, moving_file_Li,
-                             transfo_folder,
-                             executable_cat12, standalone_cat12,
-                             mcr_matlab, matlabbatch, tpm_file,
-                             darteltpm_file)
-    elif launch == "cluster":
-        for c, i in enumerate(dico):
-            prefix_PBS = "/neurospin/psy_sbox/temp_julie/Fawzi/"\
-                            "jobs_alambic/job_{0}".format(c)
-            transfo_folder = os.path.join(os.path.dirname(dico[i][0]),
-                                          "transfo")
-            subprocess.check_call(["mkdir", "-p", transfo_folder])
-            target_Lianat = dico[i][1]
-            target_anat = dico[i][2]
-            moving_file_Li = dico[i][0]
-            PBS_filename = createPBS(prefix_PBS, c, target_Lianat, target_anat,
-                                     moving_file_Li,
-                                     transfo_folder,
-                                     executable_cat12, standalone_cat12,
-                                     mcr_matlab, matlabbatch, tpm_file,
-                                     darteltpm_file)
-            # launch_cluster(PBS_filename)
-
-   
 
 if __name__ == "__main__":
     main()
