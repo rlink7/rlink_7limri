@@ -4,7 +4,7 @@
 
 **Development**
 
-|Pep8|_ Doc|_ |ExtraDoc|_
+|Pep8|_ |Doc|_ |ExtraDoc|_
 
 **Release**
 
