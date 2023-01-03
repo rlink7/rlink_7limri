@@ -39,7 +39,7 @@ jobs:
     - name: Compute documentation
       run: |
         mkdir -p tmp/doc
-        sphinxdoc -v 2 -p . -n brainprep -o tmp/doc
+        sphinxdoc -v 2 -p . -n limri -o tmp/doc
         cd tmp/doc
         make raw-html
         cd ../..
