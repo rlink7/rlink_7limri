@@ -1,113 +1,92 @@
-|Python27|_ |Python35|_ |PyPi|_
+**Usage**
 
-.. |Python27| image:: https://img.shields.io/badge/python-2.7-blue.svg
-.. _Python27: https://badge.fury.io/py/pycaravel
+|PythonVersion|_ |License|_ |PoweredBy|_
 
-.. |Python35| image:: https://img.shields.io/badge/python-3.5-blue.svg
-.. _Python35: https://badge.fury.io/py/pycaravel
+**Development**
 
-.. |PyPi| image:: https://badge.fury.io/py/pycaravel.svg
-.. _PyPi: https://badge.fury.io/py/pycaravel
+|Pep8|_
+
+**Release**
+
+|PyPi|_
 
 
-rlink_7Limri_2022
-=================
+.. |PythonVersion| image:: https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue
+.. _PythonVersion: https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue
 
-This module has been created to do some preprocessings on lithium mri data.
+.. |Pep8| image:: https://github.com/rlink7/rlink_7limri/actions/workflows/pep8.yml/badge.svg
+.. _Pep8: https://github.com/rlink7/rlink_7limri/actions
+
+.. |PyPi| image:: https://badge.fury.io/py/limri.svg
+.. _PyPi: https://badge.fury.io/py/limri
+
+.. |License| image:: https://img.shields.io/badge/License-CeCILLB-blue.svg
+.. _License: http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
+
+.. |PoweredBy| image:: https://img.shields.io/badge/Powered%20by-CEA%2FNeuroSpin-blue.svg
+.. _PoweredBy: https://joliot.cea.fr/drf/joliot/Pages/Entites_de_recherche/NeuroSpin.aspx
+
+
+limri: tools to pre-process Lithium imaging
+===========================================
+
+\:+1: If you are using the code please add a star to the repository :+1:
+
+This module has been created to do some pre-processings on Lithium MRI.
+You can list all available workflows by running the following command in a
+command prompt:
+
+.. code::
+
+    limri --help
 
 
 Important links
 ===============
 
+* Official source code repo: https://github.com/rlink7/rlink_7limri
+* HTML documentation (stable release): WIP
+* HTML documentation (latest release): WIP
+* Release notes: https://github.com/rlink7/rlink_7limri/blob/master/CHANGELOG.rst
+
 
 Dependencies
 ============
 
-The required dependencies to use the software are:
+`limri` requires the installation of the following system packages:
 
+* Python [>=3.6]
 
 
 Install
 =======
 
-Check the official documentation dedicated page.
+First make sure you have installed all the dependencies listed above.
+Then you can install `limri` by running the following command in a
+command prompt:
 
-
-How to use
-==========
-
-Neurospin specifics:
-Activate the env :
 .. code::
 
-    source /neurospin/tmp/jv261711/env/li/bin/activate
-Copy/Paste the Rawdata to /derivatives/preproc_limri/ (this will be your input folder)
-
-Options
-=======
-# method : "one" or "list"
-You can launch the preprocessing on one subject, with the "one" option.
-You can launch the preprocessing on several subjects, with the "list" option.
-
-# launch: "local" or "cluster"
-You can launch the preprocessing on your local computer.
-You can launch the preprocessing on the alambic cluster. (neurospin specifics)
-
-# file.txt : 1 or 0
-If you know exactly which subjetcs you want to preprocess, you can launch the preprocessing from txt files, set the option to 1.
-If you want to use regex or to use the one method, set the option to 0.
-
-# threshold
-You can define a specific threshold for the lithium imaging.
-
-Inputs
-======
-
-**If method = "one" :**
-    * target_anatLi : path to the anatomic mri acquired with the Li coil. (T1w.nii)
-    * target_anat : path to the anatomic mri acquired with the H coil. (T1w.nii)
-    * moving_file_Li : path to the Li mri mri acquired with the Li coil. (lithium.nii)
-    * transfo_folder = path to the output folder.
+    pip install -U --user limri
 
 
-**If method = "list" :**
-    If file_txt = 0:
-        * path = path to the input folder. (common path before the regex)
-        * liregex = regex of Li mri mri acquired with the Li coil. (lithium.nii)
-        * anatliregex = regex of the anatomic mri acquired with the Li coil. (T1w.nii)
-        * anatregex = regex of the anatomic mri acquired with the H coil. (T1w.nii)
-    If file_txt = 1:
-        * path_Li = Path to the Li.txt file : content : one row per subject.
-        * path_anat_Li = Path to the anatLi.txt file : content : one row per subject.
-        * path_anat = Path to the anatH.txt file : content : one row per subject.
+Contributing
+============
 
-Preprocessing Pipeline Description
-==================================
+If you want to contribute to `limri`, be sure to review the `contribution guidelines`_.
 
-* linear transformation : anat Li coil => anat H coil.
-* non linear transformation : anat H coil => MNI Template.
-* Apply combinaison of transfomations.
-* Apply denoising on Li.
-* Save Li and anat H in the MNI space.
-* Save plots.
-
-Outputs
-=======
-* anatLi_to_anat.mat => linear transfo matrix from anat mri Li coil to anat mri Hcoil
-* inverse_anatLi_to_anat.mat		 
-* Li_to_Lianat.mat => linear transfo matrix from Li mri Li coil to anat mri Licoil (head motions)
-* inverse_Li_to_Lianat.mat
-* li_modified_affine.nii => Li with modified affine (from linear registration above)
-* wli_modified_affine.nii => Li mri Li coil in the MNI space.
-* wt1_weighted_sagittal_1_0iso.nii => Anat mri H coil in the MNI space.
-* sanlm_wli_modified_affine.nii => Denoised Li mri Li coil in the MNI space.
-* figure_li_anat_MNI.png => plot of Li mri Li coil (threshold) and anat mri H coil
-* figure_denoised_li_anat_MNI.png => plot of denoised Li mri Li coil (threshold) and anat mri H coil 	 
-	 
-	 
+.. _contribution guidelines: ./CONTRIBUTING.rst
 
 
+Citation
+========
 
+There is no paper published yet about `limri`.
+We suggest that you aknowledge the brainprep team or reference to the code
+repository: |link-to-paper|. Thank you.
 
+.. |link-to-paper| raw:: html
 
-
+      <a href="https://github.com/rlink7/rlink_7limri "target="_blank">
+      Grigis, A. et al. (2022) BrainPrep source code (Version 0.01) [Source code].
+      https://github.com/rlink7/rlink_7limri </a>

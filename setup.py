@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 ##########################################################################
-# NSAp - Copyright (C) CEA, 2019 - 2020
+# NSAp - Copyright (C) CEA, 2019 - 2023
 # Distributed under the terms of the CeCILL-B license, as published by
 # the CEA-CNRS-INRIA. Refer to the LICENSE file or to
 # http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
@@ -14,11 +14,11 @@ import os
 
 
 release_info = {}
-infopath = os.path.join(os.path.dirname(__file__), "rlink_7Limri_2022", "info.py")
+infopath = os.path.join(os.path.dirname(__file__), "limri", "info.py")
 with open(infopath) as open_file:
     exec(open_file.read(), release_info)
 pkgdata = {
-    "Limri": ["tests/*.py", ],
+    "limri": ["tests/*.py", "resources/*.nii.gz"]
 }
 
 setup(
@@ -33,7 +33,6 @@ setup(
     url=release_info["URL"],
     packages=find_packages(exclude="doc"),
     platforms=release_info["PLATFORMS"],
-    extras_require=release_info["EXTRA_REQUIRES"],
     install_requires=release_info["REQUIRES"],
     package_data=pkgdata,
     scripts=release_info["SCRIPTS"]
