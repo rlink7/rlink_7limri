@@ -46,7 +46,7 @@ Important links
 
 * Official source code repo: https://github.com/rlink7/rlink_7limri
 * HTML documentation (stable release): WIP
-* HTML documentation (latest release): WIP
+* HTML documentation (latest release): https://limri.readthedocs.io/en/latest
 * Release notes: https://github.com/rlink7/rlink_7limri/blob/master/CHANGELOG.rst
 
 
@@ -68,6 +68,15 @@ command prompt:
 .. code::
 
     pip install -U --user limri
+
+
+Where to start
+==============
+
+The easiest way to get started is to:
+
+* browse available examples: https://limri.readthedocs.io/en/latest/auto_gallery/index.html.
+* refer to the module API documentation: https://limri.readthedocs.io/en/latest/generated/documentation.html.
 
 
 Contributing
