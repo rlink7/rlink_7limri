@@ -82,6 +82,7 @@ Where to start
 The easiest way to get started is to:
 
 * browse available examples: https://limri.readthedocs.io/en/latest/auto_gallery/index.html.
+* refer to the list of available workflows: https://brainprep.readthedocs.io/en/latest/generated/limri.workflows.html.
 * refer to the module API documentation: https://limri.readthedocs.io/en/latest/generated/documentation.html.
 
 

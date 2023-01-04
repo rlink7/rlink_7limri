@@ -8,7 +8,7 @@
 ##########################################################################
 
 """
-Helper Module for Deep Learning
+Helper module for Lithium MRI pre-processing.
 """
 
 from .info import __version__
