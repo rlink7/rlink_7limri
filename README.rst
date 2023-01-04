@@ -50,10 +50,10 @@ command prompt:
 Important links
 ===============
 
-* Official source code repo: https://github.com/rlink7/rlink_7limri
-* HTML documentation (stable release): WIP
-* HTML documentation (latest release): https://limri.readthedocs.io/en/latest
-* Release notes: https://github.com/rlink7/rlink_7limri/blob/master/CHANGELOG.rst
+* `Official source code repo. <https://github.com/rlink7/rlink_7limri>`_
+* HTML documentation (stable release): WIP.
+* `HTML documentation (latest release). <https://limri.readthedocs.io/en/latest>`_
+* `Release notes. <https://github.com/rlink7/rlink_7limri/blob/master/CHANGELOG.rst>`_
 
 
 Dependencies
@@ -81,9 +81,9 @@ Where to start
 
 The easiest way to get started is to:
 
-* browse available examples: https://limri.readthedocs.io/en/latest/auto_gallery/index.html.
-* refer to the list of available workflows: https://brainprep.readthedocs.io/en/latest/generated/limri.workflows.html.
-* refer to the module API documentation: https://limri.readthedocs.io/en/latest/generated/documentation.html.
+* `browse available examples. <https://limri.readthedocs.io/en/latest/auto_gallery/index.html>`_
+* `refer to the list of available workflows. <https://limri.readthedocs.io/en/latest/generated/limri.workflows.html>`_
+* `refer to the module API documentation. <https://limri.readthedocs.io/en/latest/generated/documentation.html>`_
 
 
 Contributing
@@ -104,5 +104,5 @@ repository: |link-to-paper|. Thank you.
 .. |link-to-paper| raw:: html
 
       <a href="https://github.com/rlink7/rlink_7limri "target="_blank">
-      Grigis, A. et al. (2022) BrainPrep source code (Version 0.01) [Source code].
+      Grigis, A. et al. (2023) LiMRI source code (Version 0.01) [Source code].
       https://github.com/rlink7/rlink_7limri </a>
