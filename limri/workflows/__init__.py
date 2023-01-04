@@ -12,3 +12,4 @@ Workflows definition.
 """
 
 from .registration import li2mni, applytrf
+from .maskeyes import li2mnieyes

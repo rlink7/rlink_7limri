@@ -12,6 +12,7 @@ A module with common functions.
 """
 
 # System import
+from .color_utils import print_multicolor
 from .info import __version__, LICENSE, AUTHOR, DESCRIPTION
 
 
@@ -47,4 +48,5 @@ def info():
     license = f"License: {LICENSE.strip(rchar)}\n"
     authors = f"Authors: {AUTHOR.strip(rchar)}\n"
     desc = f"Description: {DESCRIPTION.strip(rchar)}\n"
-    return logo() + "\n" + desc + version + license + authors
+    return (print_multicolor(logo(), display=False) + "\n" + desc +
+            version + license + authors)

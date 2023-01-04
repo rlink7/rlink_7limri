@@ -20,6 +20,8 @@ Changes
 The following workflows are released:
 
 * li2mni
+* applytrf
+* li2mnieyes
 
 Bug fixes
 ---------

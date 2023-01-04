@@ -14,6 +14,7 @@ Utility methods to print the results in a terminal using term colors.
 # Imports
 import os
 import platform
+import numpy as np
 
 
 IS_WINDOWS = platform.system() == "Windows"
@@ -639,6 +640,17 @@ def stylize(text, styles, reset=True):
     return "{}{}{}".format("".join(styles), text, terminator)
 
 
+def random_stylize(text, reset=True):
+    """ Conveniently styles your text as and resets ANSI codes at its end.
+    """
+    colors = list(colored("white").paint.keys())
+    text = [stylize(char,
+                    fg(colors[np.random.choice(len(text))]) + attr("bold"),
+                    reset=reset)
+            for char in text]
+    return "".join(text)
+
+
 def fg(color):
     """ Alias for colored().foreground().
     """
@@ -673,3 +685,12 @@ def print_result(result):
     if IS_COLOR_TERM:
         result = stylize(result, fg(fg_colors["result"]))
     print(result)
+
+
+def print_multicolor(text, display=True):
+    if IS_COLOR_TERM:
+        text = random_stylize(text)
+    if display:
+        print(text)
+    else:
+        return text

@@ -10,7 +10,7 @@
 # Module current version
 version_major = 0
 version_minor = 0
-version_micro = 0
+version_micro = 1
 
 # Expected by setup.py: string of form "X.Y.Z"
 __version__ = "{0}.{1}.{2}".format(version_major, version_minor, version_micro)
@@ -32,9 +32,11 @@ SUMMARY = """
 .. container:: summary-carousel
 
     `Limri` is a toolbox that provides common lithium brain
-    MRI PreProcessing scripts:
+    MRI pre-processing scripts:
 
     * li2mni
+    * applytrf
+    * li2mnieyes
 """
 long_description = (
     "Package that provides tools for brain Lithium MRI pre-processing.\n")
