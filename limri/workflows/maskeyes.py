@@ -22,7 +22,7 @@ from scipy import ndimage
 from collections import Counter
 import matplotlib.pyplot as plt
 import limri
-from limri.regtools import apply_translation
+from limri.regtools import save_translation
 from limri.color_utils import print_title, print_subtitle, print_result
 
 
@@ -87,11 +87,10 @@ def li2mnieyes(li2mni_file, outdir, bins=300):
     li2ref_translation = ref_bary - li_bary
     print_result(f"li2ref estimated translation: {li2ref_translation}")
 
-    print_title("Apply translation...")
-    shiftedli2mni_file = os.path.join(outdir, "shiftedli2mni.nii.gz")
-    apply_translation(image_file=li2mni_file, translation=li2ref_translation,
-                      filename=shiftedli2mni_file)
-    print_result(shiftedli2mni_file)
+    print_title("Save translation...")
+    li2lianat_file = os.path.join(outdir, "li2lianat0GenericAffine.mat")
+    save_translation(li2ref_translation, li2lianat_file)
+    print_result(li2lianat_file)
 
 
 def get_last_mode(data, bins=300, snapdir=None):

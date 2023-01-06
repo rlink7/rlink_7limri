@@ -16,6 +16,7 @@ import os
 import subprocess
 import numpy as np
 import nibabel
+import scipy.io as sio
 from limri.color_utils import print_subtitle, print_result
 
 
@@ -377,3 +378,53 @@ def apply_translation(image_file, translation, filename):
     affine[:3, 3] += translation
     im = nibabel.Nifti1Image(im.get_fdata(), affine)
     nibabel.save(im, filename)
+
+
+def save_translation(translation, filename):
+    """ Save a translation in Ants format.
+
+    Parameters
+    ----------
+    translation: 3-uplet
+        the translation in mm.
+    filename: str
+        the name of the transformed image.
+    """
+    try:
+        import ants
+    except:
+        raise ImportError("You will need to install AntsPy to execute this "
+                          "function.")
+
+    ras2lps = np.array([-1, -1, 1])
+    tx = ants.create_ants_transform(
+        transform_type="AffineTransform", translation=(ras2lps * translation))
+    ants.write_transform(tx, filename)
+
+
+def ants2affine(mat_file):
+    """ Map from 'in_file' image voxels to 'ref_file' voxels given `mat_file`
+    omat Ants affine transformation.
+
+    Parameters
+    ------------
+    mat_file: str
+        filename of affine transformation file from Ants.
+
+    Returns
+    -------
+    omat: array (4, 4)
+        array containing the transform from voxel coordinates in image
+        for 'in_file' to voxel coordinates in image for 'ref_file'.
+    """
+    transfo_dict = sio.loadmat(mat_file)
+    lps2ras = np.diag([-1, -1, 1])
+    key = list(transfo_dict.keys()).remove("fixed")[0]
+    rot = transfo_dict[key][0:9].reshape((3, 3))
+    trans = transfo_dict[key][9:12]
+    offset = transfo_dict["fixed"]
+    r_trans = (np.dot(rot, offset) - offset - trans).T * [1, 1, -1]
+    omat = np.eye(4)
+    omat[0: 3, 3] = r_trans
+    omat[:3, :3] = np.dot(np.dot(lps2ras, rot), lps2ras)
+    return omat
