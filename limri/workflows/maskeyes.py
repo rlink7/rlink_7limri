@@ -26,7 +26,7 @@ from limri.regtools import save_translation
 from limri.color_utils import print_title, print_subtitle, print_result
 
 
-def li2mnieyes(li2mni_file, outdir, bins=300):
+def li2mnieyes(li2mni_file, outdir, thr_factor=2, bins=300):
     """ Detect the eyes in a Lithium MRI image in the MNI space and determine
     a potential shift as a translation.
 
@@ -36,6 +36,9 @@ def li2mnieyes(li2mni_file, outdir, bins=300):
         path to the Li image.
     outdir: str
         path to the destination folder.
+    thr_factor: float, default 2
+        multiply the mean of the second mode in the histogram to get a
+        threshold to detect the eyes in the Lithium image.
     bins: int, default 300
         the number of bins in the histogram.
     """
@@ -54,7 +57,7 @@ def li2mnieyes(li2mni_file, outdir, bins=300):
     print_result(f"last mode: {mode}")
 
     print_title("Extract eyes...")
-    arr[arr < 2 * mode] = 0
+    arr[arr < thr_factor * mode] = 0
     arr[arr > 0] = 1
     mask_im = nibabel.Nifti1Image(arr, im.affine)
     nibabel.save(mask_im, os.path.join(outdir, "li2mnieyes.nii.gz"))
