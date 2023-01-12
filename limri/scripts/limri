@@ -14,6 +14,7 @@ import limri.workflows as wf
 
 
 fire.Fire({
+    "li2mni-all": wf.li2mni_all,
     "li2mni": wf.li2mni,
     "applytrf": wf.applytrf,
     "li2mnieyes": wf.li2mnieyes
