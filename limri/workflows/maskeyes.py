@@ -22,6 +22,7 @@ from scipy import ndimage
 from collections import Counter
 import matplotlib.pyplot as plt
 import limri
+from limri.denoising import nlm_denoising
 from limri.regtools import save_translation
 from limri.color_utils import print_title, print_subtitle, print_result
 
@@ -49,6 +50,13 @@ def li2mnieyes(li2mni_file, outdir, thr_factor=2, bins=300):
                             "MNI152_T1_2mm_eye_mask.nii.gz")
     ref_im = nibabel.load(ref_file)
     ref_arr = ref_im.get_fdata()
+
+    print_title("Denoising...")
+    arr = nlm_denoising(arr, n_coils=0)
+    denoise_im = nibabel.Nifti1Image(arr, im.affine)
+    li2mnidenoised_file = os.path.join(outdir, "li2mnidenoised.nii.gz")
+    nibabel.save(denoise_im, li2mnidenoised_file)
+    print_result(li2mnidenoised_file)
 
     print_title("Last peak extraction: GMM...")
     data = arr[arr > 0]

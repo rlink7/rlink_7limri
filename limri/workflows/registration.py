@@ -87,10 +87,12 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
             break
     ref_file = os.path.join(os.path.dirname(limri.__file__), "resources",
                             "MNI152_T1_2mm.nii.gz")
+    mask_file = os.path.join(os.path.dirname(limri.__file__), "resources",
+                            "MNI152_T1_2mm_brain.nii.gz")
     if not is_generated:
         antsregister(
             template_file=ref_file, lianat_file=lianat_bcorr_file,
-            hanat_file=hanat_bcorr_file, outdir=outdir)
+            hanat_file=hanat_bcorr_file, outdir=outdir, mask_file=mask_file)
     else:
         print_warning("li2mni transformation already computed")
     print_result(deform_transforms + rigid_transforms)

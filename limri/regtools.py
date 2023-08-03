@@ -237,7 +237,8 @@ def normalize2field():
     raise NotImplementedError
 
 
-def antsregister(template_file, lianat_file, hanat_file, outdir):
+def antsregister(template_file, lianat_file, hanat_file, outdir,
+                 mask_file=None):
     """ Compute the deformation field with Ants from a T1w image to a template.
     """
     try:
@@ -294,9 +295,23 @@ def antsregister(template_file, lianat_file, hanat_file, outdir):
         title="li2hanat", filename=filename, overlay_alpha=0.5)
 
     print_subtitle("Rigid + Affine + deformation field: hanat -> template...")
-    h2mni = ants.registration(
-        fixed=template, moving=hanat, type_of_transform="SyNRA",
-        outprefix=os.path.join(outdir, "h2mni"))
+    if mask_file is None:
+        h2mni = ants.registration(
+            fixed=template, moving=hanat, type_of_transform="SyNRA",
+            outprefix=os.path.join(outdir, "h2mni"))
+    else:
+        h2mni = ants.registration(
+            fixed=template, moving=hanat, type_of_transform="Affine",
+            outprefix=os.path.join(outdir, "_h2mni"))
+        mask = ants.image_read(mask_file)
+        print_result(f"mask spacing: {mask.spacing}")
+        print_result(f"mask origin: {mask.origin}")
+        print_result(f"mask direction: {mask.direction}")
+        h2mni = ants.registration(
+            fixed=template, moving=hanat, type_of_transform="SyNOnly",
+            mask=mask, initial_transform=h2mni["fwdtransforms"][0],
+            outprefix=os.path.join(outdir, "h2mni"))
+
     print_result(f"deform transforms: {h2mni['fwdtransforms']}")
     jac = ants.create_jacobian_determinant_image(
         domain_image=hanat, tx=h2mni["fwdtransforms"][0])

@@ -67,7 +67,8 @@ PROVIDES = ["limri"]
 REQUIRES = [
     "numpy",
     "nibabel",
-    "antspyx"
+    "antspyx",
+    "dipy"
 ]
 SCRIPTS = [
     "limri/scripts/limri"

@@ -15,6 +15,7 @@ import os
 import limri
 from .registration import li2mni, applytrf
 from .maskeyes import li2mnieyes
+from .normalization import li2mninorm
 
 
 def li2mni_all(li_file, lianat_file, hanat_file, outdir, thr_factor=2,
