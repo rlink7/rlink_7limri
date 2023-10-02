@@ -53,6 +53,13 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
     else:
         print_warning("hanat already reoriented")
     print_result(hanat_reo_file)
+    li_reo_file = os.path.join(outdir, "li.nii.gz")
+    if not os.path.isfile(li_reo_file):
+        gzfile(li_file, li_reo_file)
+        fslreorient2std(li_reo_file, li_reo_file, save_trf=True)
+    else:
+        print_warning("hanat already reoriented")
+    print_result(hanat_reo_file)
 
     print_title("Bias field correction...")
     lianat_bcorr_file = os.path.join(outdir, "lianat_restore.nii.gz")
@@ -88,11 +95,12 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
     ref_file = os.path.join(os.path.dirname(limri.__file__), "resources",
                             "MNI152_T1_2mm.nii.gz")
     mask_file = os.path.join(os.path.dirname(limri.__file__), "resources",
-                            "MNI152_T1_2mm_brain.nii.gz")
+                             "MNI152_T1_2mm_brain.nii.gz")
     if not is_generated:
         antsregister(
             template_file=ref_file, lianat_file=lianat_bcorr_file,
-            hanat_file=hanat_bcorr_file, outdir=outdir, mask_file=mask_file)
+            li_file=li_file, hanat_file=hanat_bcorr_file, outdir=outdir,
+            mask_file=mask_file)
     else:
         print_warning("li2mni transformation already computed")
     print_result(deform_transforms + rigid_transforms)
