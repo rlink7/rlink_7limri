@@ -58,8 +58,8 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
         gzfile(li_file, li_reo_file)
         fslreorient2std(li_reo_file, li_reo_file, save_trf=True)
     else:
-        print_warning("hanat already reoriented")
-    print_result(hanat_reo_file)
+        print_warning("li already reoriented")
+    print_result(li_reo_file)
 
     print_title("Bias field correction...")
     lianat_bcorr_file = os.path.join(outdir, "lianat_restore.nii.gz")
@@ -83,7 +83,7 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
     print_result(hanat_bcorr_file)
 
     print_title("Coregistration & normalization...")
-    rigid_transforms = [os.path.join(outdir, "li2h0GenericAffine.mat")]
+    rigid_transforms = [os.path.join(outdir, "lianat2h0GenericAffine.mat")]
     deform_transforms = [
         os.path.join(outdir, "h2mni1Warp.nii.gz"),
         os.path.join(outdir, "h2mni0GenericAffine.mat")]
