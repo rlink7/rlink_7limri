@@ -35,14 +35,14 @@ def li2mninorm(li2mni_file, mask_file, outdir, ref_value=None,
         path to the Li image.
     li2mniref_file: str
         path to the reference Li image.
-    ref_val: int
+    ref_value: int
         reference value of phantom intensity for the corresponding site.
     mask_file: str
         the brain mask image.
     outdir: str
         path to the destination folder.
     norm: str, default 'hist'
-        the normalization method.
+        the normalization method, can be: hist, minmax, mean.
     """
     print_title("Load data...")
     li2mni = nibabel.load(li2mni_file)
