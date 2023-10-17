@@ -12,5 +12,4 @@ Normalization/calibration tools.
 """
 
 from .hist import hist_matching
-from .minmax import minmax_matching
-from .from_mean import from_mean_matching
+from .minmax import minmax_matching, norm

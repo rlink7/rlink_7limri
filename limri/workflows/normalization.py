@@ -14,59 +14,60 @@ Intensity normalization.
 # Imports
 import os
 import nibabel
-from limri.norm import hist_matching, minmax_matching, from_mean_matching
+from limri.norm import hist_matching, minmax_matching, norm
 from limri.color_utils import print_title, print_result
 
 # Global parameters
 NORM_MAP = {
     "hist": hist_matching,
     "minmax": minmax_matching,
-    "mean": from_mean_matching
+    "norm": norm
 }
 
 
-def li2mninorm(li2mni_file, mask_file, outdir, ref_value=None,
-               li2mniref_file=None, norm="hist"):
+def li2mninorm(li2mni_file, mask_file, outdir, norm="hist", ref_value=None,
+               li2mniref_file=None):
     """ Normalize intensities using histogram matching.
 
     Parameters
     ----------
     li2mni_file: str
         path to the Li image.
-    li2mniref_file: str
-        path to the reference Li image.
-    ref_value: int
-        reference value of phantom intensity for the corresponding site.
     mask_file: str
         the brain mask image.
     outdir: str
         path to the destination folder.
     norm: str, default 'hist'
-        the normalization method, can be: hist, minmax, mean.
+        the normalization method, can be: 'hist', 'minmax', 'norm'.
+    ref_value: int, default None
+        reference value of phantom intensity: needed for 'norm' normlaization.
+    li2mniref_file: str, default None
+        path to the reference Li image: needed for 'hist' and 'minmax'
+        normalization.
     """
     print_title("Load data...")
     li2mni = nibabel.load(li2mni_file)
     li2mni_arr = li2mni.get_fdata()
-    if li2mniref_file:
+    if li2mniref_file is not None:
         li2mniref = nibabel.load(li2mni_file)
         li2mniref_arr = li2mniref.get_fdata()
     mask = nibabel.load(mask_file)
     mask_arr = mask.get_fdata()
     if norm == "hist" or norm == "minmax" and li2mniref_file is None:
-        raise ValueError("We need the path to the reference Li image with"
-                         "li2mniref_file argument for this type of "
-                         "normalization method.")
-
+        raise ValueError("We need the path to the reference Li image "
+                         "specified throught the 'li2mniref_file' argument "
+                         "for this type of normalization method.")
+    if norm == "norm" and ref_value is None:
+        raise ValueError("We need reference phantom intensity value image"
+                         "specified through the 'ref_value' argument for this "
+                         "type of normalization method.")
     print_title("Normalization...")
     norm_fn = NORM_MAP.get(norm)
     if norm_fn is None:
         raise ValueError("Normalization method not defined.")
-    if norm != "mean":
+    if norm != "norm":
         norm_arr = norm_fn(li2mni_arr, li2mniref_arr, mask_arr)
-    elif norm == "mean":
-        if ref_value is None:
-            raise ValueError("We need the ref_value for this type of "
-                             "normalization method")
+    else:
         norm_arr = norm_fn(li2mni_arr, ref_value)
     norm = nibabel.Nifti1Image(norm_arr, li2mni.affine)
     norm_file = os.path.join(outdir, "li2mninorm.nii.gz")

@@ -294,7 +294,6 @@ def antsregister(template_file, li_file, lianat_file, hanat_file, outdir,
     lianat2hanat = ants.apply_transforms(
         fixed=hanat, moving=lianat, transformlist=lianat2h["fwdtransforms"],
         interpolator="bSpline")
-    print(f"{lianat2hanat=}")
     filename = os.path.join(outdir, "lianat2hanat.nii.gz")
     lianat2hanat.to_filename(filename)
     print_result(f"lianat2h T1: {filename}")
@@ -302,12 +301,9 @@ def antsregister(template_file, li_file, lianat_file, hanat_file, outdir,
     lianat2hanat.plot_ortho(
         hanat, flat=True, xyz_lines=False, orient_labels=False,
         title="lianat2hanat", filename=filename, overlay_alpha=0.5)
-
-    print_subtitle("Rigid: li -> hanat...")
     li2hanat = ants.apply_transforms(
         fixed=hanat, moving=li, transformlist=lianat2h["fwdtransforms"],
         interpolator="bSpline")
-    print(f"{li2hanat=}")
     filename = os.path.join(outdir, "li2hanat.nii.gz")
     li2hanat.to_filename(filename)
     print_result(f"li2h T1: {filename}")

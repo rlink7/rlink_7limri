@@ -99,7 +99,7 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
     if not is_generated:
         antsregister(
             template_file=ref_file, lianat_file=lianat_bcorr_file,
-            li_file=li_file, hanat_file=hanat_bcorr_file, outdir=outdir,
+            li_file=li_reo_file, hanat_file=hanat_bcorr_file, outdir=outdir,
             mask_file=mask_file)
     else:
         print_warning("li2mni transformation already computed")
@@ -109,7 +109,7 @@ def li2mni(li_file, lianat_file, hanat_file, outdir, li2lianat=None):
     li2mni_file = os.path.join(outdir, "li2mni.nii.gz")
     if not os.path.isfile(li2mni_file):
         li2lianat = li2lianat or (0, 0, 0)
-        apply_translation(image_file=li_file, translation=li2lianat,
+        apply_translation(image_file=li_reo_file, translation=li2lianat,
                           filename=li2mni_file)
         apply_transforms(
             fixed_file=ref_file, moving_file=li2mni_file,

@@ -8,7 +8,7 @@
 ##########################################################################
 
 """
-Histogram matching.
+MinMax matching.
 """
 
 # Imports
@@ -50,4 +50,26 @@ def minmax_matching(source, template, mask, concentration=2.):
     # Normalize data
     matched = (source * concentration) / ref_val
 
+    return matched
+
+
+def norm(source, ref_val, concentration=2.):
+    """ Simply normalize the intensities from a reference intensity value and
+    the associated compartment concentration.
+
+    Parameters
+    ----------
+    source: np.ndarray
+        the image to transform.
+    ref_val: int
+        reference value of phantom intensity for the corresponding site.
+    concentration: float, default 2.
+        the compartment concentration in milli mols / litre.
+
+    Returns
+    -------
+    matched: np.ndarray
+        the transformed source image.
+    """
+    matched = (source * concentration) / ref_val
     return matched
