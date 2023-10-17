@@ -48,6 +48,6 @@ def li2mni_all(li_file, lianat_file, hanat_file, outdir, thr_factor=2,
     transformlist = [
         os.path.join(outdir, "h2mni1Warp.nii.gz"),
         os.path.join(outdir, "h2mni0GenericAffine.mat"),
-        os.path.join(outdir, "li2h0GenericAffine.mat"),
+        os.path.join(outdir, "lianat2h0GenericAffine.mat"),
         os.path.join(outdir, "li2lianat0GenericAffine.mat")]
     applytrf(ref_file, li_file, transformlist, shiftedli2mni_file)

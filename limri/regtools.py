@@ -237,7 +237,7 @@ def normalize2field():
     raise NotImplementedError
 
 
-def antsregister(template_file, lianat_file, hanat_file, outdir,
+def antsregister(template_file, li_file, lianat_file, hanat_file, outdir,
                  mask_file=None):
     """ Compute the deformation field with Ants from a T1w image to a template.
     """
@@ -248,6 +248,14 @@ def antsregister(template_file, lianat_file, hanat_file, outdir,
                           "function.")
 
     print_subtitle("Load data...")
+    li = ants.image_read(li_file)
+    print_result(f"li spacing: {li.spacing}")
+    print_result(f"li origin: {li.origin}")
+    print_result(f"li direction: {li.direction}")
+    filename = os.path.join(outdir, "li.png")
+    li.plot_ortho(
+        flat=True, xyz_lines=False, orient_labels=False,
+        title="li", filename=filename)
     lianat = ants.image_read(lianat_file)
     print_result(f"lianat spacing: {lianat.spacing}")
     print_result(f"lianat origin: {lianat.origin}")
@@ -279,13 +287,27 @@ def antsregister(template_file, lianat_file, hanat_file, outdir,
     template = ants.iMath_normalize(template)
 
     print_subtitle("Rigid: lianat -> hanat...")
-    li2h = ants.registration(
+    lianat2h = ants.registration(
         fixed=hanat, moving=lianat, type_of_transform="Rigid",
-        outprefix=os.path.join(outdir, "li2h"))
-    print_result(f"rigid transforms: {li2h['fwdtransforms']}")
-    li2hanat = ants.apply_transforms(
-        fixed=hanat, moving=lianat, transformlist=li2h["fwdtransforms"],
+        outprefix=os.path.join(outdir, "lianat2h"))
+    print_result(f"rigid transforms: {lianat2h['fwdtransforms']}")
+    lianat2hanat = ants.apply_transforms(
+        fixed=hanat, moving=lianat, transformlist=lianat2h["fwdtransforms"],
         interpolator="bSpline")
+    print(f"{lianat2hanat=}")
+    filename = os.path.join(outdir, "lianat2hanat.nii.gz")
+    lianat2hanat.to_filename(filename)
+    print_result(f"lianat2h T1: {filename}")
+    filename = os.path.join(outdir, "lianat2hanat.png")
+    lianat2hanat.plot_ortho(
+        hanat, flat=True, xyz_lines=False, orient_labels=False,
+        title="lianat2hanat", filename=filename, overlay_alpha=0.5)
+
+    print_subtitle("Rigid: li -> hanat...")
+    li2hanat = ants.apply_transforms(
+        fixed=hanat, moving=li, transformlist=lianat2h["fwdtransforms"],
+        interpolator="bSpline")
+    print(f"{li2hanat=}")
     filename = os.path.join(outdir, "li2hanat.nii.gz")
     li2hanat.to_filename(filename)
     print_result(f"li2h T1: {filename}")
@@ -316,35 +338,35 @@ def antsregister(template_file, lianat_file, hanat_file, outdir,
     jac = ants.create_jacobian_determinant_image(
         domain_image=hanat, tx=h2mni["fwdtransforms"][0])
     jac -= 1
-    h2mnianat = ants.apply_transforms(
+    hanat2mni = ants.apply_transforms(
         fixed=template, moving=hanat, transformlist=h2mni["fwdtransforms"],
         interpolator="bSpline")
     h2mnijac = ants.apply_transforms(
         fixed=template, moving=jac, transformlist=h2mni["fwdtransforms"],
         interpolator="bSpline")
-    li2mnianat = ants.apply_transforms(
+    lianat2mni = ants.apply_transforms(
         fixed=template, moving=lianat, interpolator="bSpline",
-        transformlist=h2mni["fwdtransforms"] + li2h["fwdtransforms"])
+        transformlist=h2mni["fwdtransforms"] + lianat2h["fwdtransforms"])
     filename = os.path.join(outdir, "hjac.nii.gz")
     jac.to_filename(filename)
     print_result(f"h jacobian: {filename}")
     filename = os.path.join(outdir, "h2mnijac.nii.gz")
     h2mnijac.to_filename(filename)
     print_result(f"h2mni jacobian: {filename}")
-    filename = os.path.join(outdir, "li2mnianat.nii.gz")
-    li2mnianat.to_filename(filename)
+    filename = os.path.join(outdir, "lianat2mni.nii.gz")
+    lianat2mni.to_filename(filename)
     print_result(f"li2mni T1: {filename}")
-    filename = os.path.join(outdir, "h2mnianat.nii.gz")
-    h2mnianat.to_filename(filename)
+    filename = os.path.join(outdir, "hanat2mni.nii.gz")
+    hanat2mni.to_filename(filename)
     print_result(f"h2mni T1: {filename}")
-    filename = os.path.join(outdir, "li2mnianat.png")
-    li2mnianat.plot_ortho(
+    filename = os.path.join(outdir, "lianat2mni.png")
+    lianat2mni.plot_ortho(
         template, flat=True, xyz_lines=False, orient_labels=False,
-        title="li2mnianat", filename=filename, overlay_alpha=0.5)
-    filename = os.path.join(outdir, "h2mnianat.png")
-    h2mnianat.plot_ortho(
+        title="lianat2mni", filename=filename, overlay_alpha=0.5)
+    filename = os.path.join(outdir, "hanat2mni.png")
+    hanat2mni.plot_ortho(
         template, flat=True, xyz_lines=False, orient_labels=False,
-        title="h2mnianat", filename=filename, overlay_alpha=0.5)
+        title="hanat2mni", filename=filename, overlay_alpha=0.5)
 
 
 def apply_transforms(fixed_file, moving_file, transformlist, filename):
