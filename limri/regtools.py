@@ -164,8 +164,8 @@ def flirt2aff(mat_file, in_file, ref_file):
     flirt_affine = np.loadtxt(mat_file)
     in_img = nibabel.load(in_file)
     ref_img = nibabel.load(ref_file)
-    in_hdr = in_img.get_header()
-    ref_hdr = ref_img.get_header()
+    in_hdr = in_img._header
+    ref_hdr = ref_img._header
 
     def _x_flipper(n):
         flipr = np.diag([-1, 1, 1, 1])
@@ -174,9 +174,9 @@ def flirt2aff(mat_file, in_file, ref_file):
 
     inspace = np.diag(in_hdr.get_zooms()[:3] + (1, ))
     refspace = np.diag(ref_hdr.get_zooms()[:3] + (1, ))
-    if np.linalg.det(in_img.get_affine()) >= 0:
+    if np.linalg.det(in_img._affine) >= 0:
         inspace = np.dot(inspace, _x_flipper(in_hdr.get_data_shape()[0]))
-    if np.linalg.det(ref_img.get_affine()) >= 0:
+    if np.linalg.det(ref_img._affine) >= 0:
         refspace = np.dot(refspace, _x_flipper(ref_hdr.get_data_shape()[0]))
 
     omat = np.dot(np.linalg.inv(refspace), np.dot(flirt_affine, inspace))
@@ -294,7 +294,6 @@ def antsregister(template_file, li_file, lianat_file, hanat_file, outdir,
     lianat2hanat = ants.apply_transforms(
         fixed=hanat, moving=lianat, transformlist=lianat2h["fwdtransforms"],
         interpolator="bSpline")
-    print(f"{lianat2hanat=}")
     filename = os.path.join(outdir, "lianat2hanat.nii.gz")
     lianat2hanat.to_filename(filename)
     print_result(f"lianat2h T1: {filename}")
@@ -302,12 +301,9 @@ def antsregister(template_file, li_file, lianat_file, hanat_file, outdir,
     lianat2hanat.plot_ortho(
         hanat, flat=True, xyz_lines=False, orient_labels=False,
         title="lianat2hanat", filename=filename, overlay_alpha=0.5)
-
-    print_subtitle("Rigid: li -> hanat...")
     li2hanat = ants.apply_transforms(
         fixed=hanat, moving=li, transformlist=lianat2h["fwdtransforms"],
         interpolator="bSpline")
-    print(f"{li2hanat=}")
     filename = os.path.join(outdir, "li2hanat.nii.gz")
     li2hanat.to_filename(filename)
     print_result(f"li2h T1: {filename}")
