@@ -50,3 +50,8 @@ jobs:
         retention-days: 15
         path: |
             tmp/doc/build/html
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: tmp/doc/build/html

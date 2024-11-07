@@ -18,7 +18,7 @@
 .. _Pep8: https://github.com/rlink7/rlink_7limri/actions
 
 .. |Doc| image:: https://github.com/rlink7/rlink_7limri/actions/workflows/documentation.yml/badge.svg
-.. _Doc: https://github.com/rlink7/rlink_7limri/actions
+.. _Doc: https://rlink7.github.io/rlink_7limri
 
 .. |PyPi| image:: https://badge.fury.io/py/limri.svg
 .. _PyPi: https://badge.fury.io/py/limri
