@@ -164,8 +164,8 @@ def flirt2aff(mat_file, in_file, ref_file):
     flirt_affine = np.loadtxt(mat_file)
     in_img = nibabel.load(in_file)
     ref_img = nibabel.load(ref_file)
-    in_hdr = in_img._header
-    ref_hdr = ref_img._header
+    in_hdr = in_img.header
+    ref_hdr = ref_img.header
 
     def _x_flipper(n):
         flipr = np.diag([-1, 1, 1, 1])
@@ -174,9 +174,9 @@ def flirt2aff(mat_file, in_file, ref_file):
 
     inspace = np.diag(in_hdr.get_zooms()[:3] + (1, ))
     refspace = np.diag(ref_hdr.get_zooms()[:3] + (1, ))
-    if np.linalg.det(in_img._affine) >= 0:
+    if np.linalg.det(in_img.affine) >= 0:
         inspace = np.dot(inspace, _x_flipper(in_hdr.get_data_shape()[0]))
-    if np.linalg.det(ref_img._affine) >= 0:
+    if np.linalg.det(ref_img.affine) >= 0:
         refspace = np.dot(refspace, _x_flipper(ref_hdr.get_data_shape()[0]))
 
     omat = np.dot(np.linalg.inv(refspace), np.dot(flirt_affine, inspace))
