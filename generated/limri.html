@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+		<!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title>limri</title>
+        
+        <!-- CSS -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500&display=swap">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+        <link rel="stylesheet" href="../_static/css/jquery.mCustomScrollbar.min.css">
+        <link rel="stylesheet" href="../_static/css/animate.css">
+        <link rel="stylesheet" href="../_static/css/style.css">
+        <link rel="stylesheet" href="../_static/css/jquery.mosaic.css">
+        <link rel="stylesheet" href="../_static/gallery.css">
+        <link rel="stylesheet" href="../_static/css/media-queries.css">
+        <link rel="stylesheet" href="../_static/css/pygment.css">
+
+        <!-- Favicon and touch icons -->
+        <link rel="shortcut icon" href="../_static/ico/favicon.png">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../_static/ico/apple-touch-icon-144-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../_static/ico/apple-touch-icon-114-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../_static/ico/apple-touch-icon-72-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="../_static/ico/apple-touch-icon-57-precomposed.png">
+
+    </head>
+
+    <body>
+
+		<!-- Wrapper -->
+    	<div class="wrapper">
+
+			<!-- Sidebar -->
+			<nav class="sidebar">
+				
+				<!-- close sidebar menu -->
+				<div class="dismiss">
+					<i class="fas fa-arrow-left"></i>
+				</div>
+				
+				<div class="logo"">
+					<h3><a href="../index.html">Sidebar Menu</a></h3>
+				</div>
+
+                <!-- info setup -->
+                    <p class="doc-version">
+                        This documentation is for limri <strong>version 0.0.1</strong>
+                    </p>
+                <p class="citing">
+                    If you use the software, please do not hesitate to 
+                    <a &mdash; <a href="https://github.com/rlink7/rlink_7limri">
+                    Report a Bug</a>.
+                </p>
+				
+                <!-- links -->
+                
+                
+                    
+                
+				<ul class="list-unstyled menu-elements">
+					<li class="active">
+						<a href="../index.html"><i class="fas fa-home"></i> Home</a>
+					</li>
+					<li>
+						<a href="installation.html"><i class="fas fa-cog"></i> Installation</a>
+					</li>
+					<li>
+						<a href="../auto_gallery/index.html"><i class="fas fa-eye"></i> Gallery</a>
+					</li>
+					<li>
+						<a href="documentation.html"><i class="fas fa-pencil-alt"></i> API documentation</a>
+					</li>
+					<li>
+						<a href="search.html"><i class="fas fa-search"></i> Search</a>
+					</li>
+					<li>
+						<a href="https://joliot.cea.fr/drf/joliot/Pages/Entites_de_recherche/NeuroSpin.aspx"><i class="fas fa-external-link-alt"></i> NeuroSpin webPage</a>
+					</li>
+					<li>
+						<a href="#otherSections" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle" role="button" aria-controls="otherSections">
+							<i class="fas fa-sync"></i>Sections Shortcuts
+						</a>
+						<ul class="collapse list-unstyled" id="otherSections">
+                            <li>LINKS</li><li><a href='https://github.com/neurospin/scripts'>scripts</a></li>
+                            
+                                
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                            
+                                            
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                            
+                                            
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                            
+                                            
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                            
+                                            
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                            
+                                            
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                        
+                                        
+                                        
+                                            
+                                            
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                
+                                    
+                                        
+                                        
+                                        
+                                    
+                                
+                                
+                                    <li>SECTIONS</li>
+                                    
+						                <li> <a href='#limri'>Limri</a> </li>                                    
+                                    
+						                <li> <a href='#limri-utils'>Limri.utils</a> </li>                                    
+                                    
+						                <li> <a href='#limri-regtools'>Limri.regtools</a> </li>                                    
+                                    
+						                <li> <a href='#limri-normtools'>Limri.normtools</a> </li>                                    
+                                    
+						                <li> <a href='#limri-color-utils'>Limri.color_utils</a> </li>                                    
+                                    
+						                <li> <a href='#limri-denoising'>Limri.denoising</a> </li>                                    
+                                    
+                                
+                            
+                            <li>API</li>
+                            <li><a href="#">limri</a></li><li><a href="limri.norm.html">limri.norm</a></li><li><a href="limri.workflows.html">limri.workflows</a></li>
+						</ul>
+					</li>
+				</ul>
+				
+                <!-- go top page -->
+				<div class="to-top">
+					<a class="btn btn-primary btn-customized-3" href="#" role="button">
+	                    <i class="fas fa-arrow-up"></i> Top
+	                </a>
+				</div>
+			
+                <!-- change color -->
+				<div class="dark-light-buttons">
+					<a class="btn btn-primary btn-customized-4 btn-customized-dark" href="#" role="button">Dark</a>
+					<a class="btn btn-primary btn-customized-4 btn-customized-light" href="#" role="button">Light</a>
+				</div>
+			
+			</nav>
+			<!-- End sidebar -->
+			
+			<!-- Dark overlay -->
+    		<div class="overlay"></div>
+
+			<!-- Content -->
+			<div class="content">
+			
+				<!-- open sidebar menu -->
+				<a class="btn btn-primary btn-customized open-menu" href="#" role="button">
+                    <i class="fas fa-align-left"></i> <span>Menu</span>
+                </a>
+
+		        <!-- Top content -->
+		        <div class="top-content section-container" id="top-content">
+			        <div class="container">
+			            <div class="row">
+                            <div class="col-md-3 section-5-box banner-logo">
+                                <img alt="Logo" src="../_static/limri.png">
+                            </div>
+			                <div class="col-md-7 section-5-box">
+			                	<h1 class="wow fadeIn">    <p>Package that provides tools for brain Lithium MRI pre-processing.</p></h1>
+			                </div>
+			            </div>
+			        </div>
+		        </div>
+                    
+                    <div class="document">
+                        <div class="section" id="api-documentation-of-limri">
+<h1>API documentation of <em>limri</em><a class="headerlink" href="#api-documentation-of-limri" title="Permalink to this headline">¶</a></h1><div class='divider-1 wow fadeInUp'><span></span></div>
+<div class="section" id="limri">
+<h2>limri<a class="headerlink" href="#limri" title="Permalink to this headline">¶</a><i class='fas fa-angle-right'></i></h2>
+<p>Helper module for Lithium MRI pre-processing.</p>
+<dl class="documentation-contents simple">
+<dt><strong>Functions</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.utils.info.html">limri.info</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="limri-utils">
+<h2>limri.utils<a class="headerlink" href="#limri-utils" title="Permalink to this headline">¶</a><i class='fas fa-angle-right'></i></h2>
+<p>A module with common functions.</p>
+<dl class="documentation-contents simple">
+<dt><strong>Functions</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.utils.info.html">limri.utils.info</a></p></li>
+<li><p><a class="reference external" href="limri.utils.logo.html">limri.utils.logo</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="limri-regtools">
+<h2>limri.regtools<a class="headerlink" href="#limri-regtools" title="Permalink to this headline">¶</a><i class='fas fa-angle-right'></i></h2>
+<p>Registration tools.</p>
+<dl class="documentation-contents simple">
+<dt><strong>Functions</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.regtools.ants2affine.html">limri.regtools.ants2affine</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.antsregister.html">limri.regtools.antsregister</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.apply_transforms.html">limri.regtools.apply_transforms</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.apply_translation.html">limri.regtools.apply_translation</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.applywarp.html">limri.regtools.applywarp</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.flirt.html">limri.regtools.flirt</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.flirt2aff.html">limri.regtools.flirt2aff</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.normalize2field.html">limri.regtools.normalize2field</a></p></li>
+<li><p><a class="reference external" href="limri.regtools.save_translation.html">limri.regtools.save_translation</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="limri-normtools">
+<h2>limri.normtools<a class="headerlink" href="#limri-normtools" title="Permalink to this headline">¶</a><i class='fas fa-angle-right'></i></h2>
+<p>Normalization tools.</p>
+<dl class="documentation-contents simple">
+<dt><strong>Functions</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.normtools.fast.html">limri.normtools.fast</a></p></li>
+<li><p><a class="reference external" href="limri.normtools.fslreorient2std.html">limri.normtools.fslreorient2std</a></p></li>
+<li><p><a class="reference external" href="limri.normtools.gzfile.html">limri.normtools.gzfile</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="limri-color-utils">
+<h2>limri.color_utils<a class="headerlink" href="#limri-color-utils" title="Permalink to this headline">¶</a><i class='fas fa-angle-right'></i></h2>
+<p>Utility methods to print the results in a terminal using term colors.</p>
+<dl class="documentation-contents simple">
+<dt><strong>Classes</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.color_utils.colored.html">limri.color_utils.colored</a></p></li>
+</ul>
+</dd>
+<dt><strong>Functions</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.color_utils.HEX.html">limri.color_utils.HEX</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.attr.html">limri.color_utils.attr</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.fg.html">limri.color_utils.fg</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.print_multicolor.html">limri.color_utils.print_multicolor</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.print_result.html">limri.color_utils.print_result</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.print_subtitle.html">limri.color_utils.print_subtitle</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.print_title.html">limri.color_utils.print_title</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.print_warning.html">limri.color_utils.print_warning</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.random_stylize.html">limri.color_utils.random_stylize</a></p></li>
+<li><p><a class="reference external" href="limri.color_utils.stylize.html">limri.color_utils.stylize</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="limri-denoising">
+<h2>limri.denoising<a class="headerlink" href="#limri-denoising" title="Permalink to this headline">¶</a><i class='fas fa-angle-right'></i></h2>
+<p>Denoising tools.</p>
+<dl class="documentation-contents simple">
+<dt><strong>Functions</strong>:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="limri.denoising.nlm_denoising.html">limri.denoising.nlm_denoising</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+
+                    </div>
+                <div class="spacer"></div>
+		        
+		        <!-- Footer -->
+		        <div class="section-6-container section-container section-container-image-bg" id="section-6">
+			        <div class="container">
+			            <div class="row">
+		                    <div class="col-md-5 offset-md-1 section-6-box wow fadeInDown">
+                                <div class="section-6-title">
+		                    	    <p>Follow us</p>
+                                </div>
+		                    	<div class="section-6-social">
+			                    	<a href="https://www.facebook.com/pages/NeuroSpin/171075046414933"><i class="fab fa-facebook-f"></i></a>
+									<a href="https://www.youtube.com/CEASaclay"><i class="fab fa-youtube"></i></a>
+									<a href="https://twitter.com/neurospin_91"><i class="fab fa-twitter"></i></a>
+									<a href="https://github.com/AGrigis/pysphinxdoc"><i class="fab fa-github"></i></a>
+                                    <p>&copy; 2024, 
+Limri developers
+ <antoine.grigis@cea.fr></p>
+		                    	</div>
+		                    </div>
+			            </div>
+			        </div>
+                </div>
+	        
+	        </div>
+	        <!-- End content -->
+        
+        </div>
+        <!-- End wrapper -->
+
+        <!-- Javascript -->
+		<script src="../_static/js/jquery-3.3.1.min.js"></script>
+		<script src="../_static/js/jquery-migrate-3.0.0.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script src="../_static/js/jquery.backstretch.min.js"></script>
+        <script src="../_static/js/wow.min.js"></script>
+        <script src="../_static/js/jquery.waypoints.min.js"></script>
+        <script src="../_static/js/jquery.mCustomScrollbar.concat.min.js"></script>
+        <script src="../_static/js/scripts.js"></script>
+        <script src="../_static/js/jquery.mosaic.js"></script>
+        <script src="../_static/js/search.js"></script>
+        <script type="text/javascript">
+	        $('.top-content').backstretch("../_static/img/backgrounds/banner1.png");
+            $('.section-6-container').backstretch("../_static/img/backgrounds/footer1.png");
+        </script>
+
+    </body>
+
+</html>

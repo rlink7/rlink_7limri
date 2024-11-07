@@ -1,0 +1,60 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+Search in API documentation of LIMRI
+=====================================
+
+.. raw:: html
+
+    <!-- Block section -->
+
+    <div class='my-search-bar'>
+    <i class='icon fa fa-search'></i>
+    <input type='text' id='my-search' onkeyup='mySearch()' placeholder='Search for functions & classes...' title='Search'>
+
+    </div>
+    <ul id='my-search-entries'>
+        <li><a href='limri.color_utils.HEX.html'>limri.color_utils.HEX</a></li>
+        <li><a href='limri.color_utils.attr.html'>limri.color_utils.attr</a></li>
+        <li><a href='limri.color_utils.colored.html'>limri.color_utils.colored</a></li>
+        <li><a href='limri.color_utils.fg.html'>limri.color_utils.fg</a></li>
+        <li><a href='limri.color_utils.print_multicolor.html'>limri.color_utils.print_multicolor</a></li>
+        <li><a href='limri.color_utils.print_result.html'>limri.color_utils.print_result</a></li>
+        <li><a href='limri.color_utils.print_subtitle.html'>limri.color_utils.print_subtitle</a></li>
+        <li><a href='limri.color_utils.print_title.html'>limri.color_utils.print_title</a></li>
+        <li><a href='limri.color_utils.print_warning.html'>limri.color_utils.print_warning</a></li>
+        <li><a href='limri.color_utils.random_stylize.html'>limri.color_utils.random_stylize</a></li>
+        <li><a href='limri.color_utils.stylize.html'>limri.color_utils.stylize</a></li>
+        <li><a href='limri.denoising.nlm_denoising.html'>limri.denoising.nlm_denoising</a></li>
+        <li><a href='limri.utils.info.html'>limri.info</a></li>
+        <li><a href='limri.norm.hist._hist_matching.html'>limri.norm.hist._hist_matching</a></li>
+        <li><a href='limri.norm.hist.hist_matching.html'>limri.norm.hist.hist_matching</a></li>
+        <li><a href='limri.norm.hist.hist_matching.html'>limri.norm.hist_matching</a></li>
+        <li><a href='limri.norm.minmax.minmax_matching.html'>limri.norm.minmax.minmax_matching</a></li>
+        <li><a href='limri.norm.minmax.norm.html'>limri.norm.minmax.norm</a></li>
+        <li><a href='limri.norm.minmax.minmax_matching.html'>limri.norm.minmax_matching</a></li>
+        <li><a href='limri.norm.minmax.norm.html'>limri.norm.norm</a></li>
+        <li><a href='limri.normtools.fast.html'>limri.normtools.fast</a></li>
+        <li><a href='limri.normtools.fslreorient2std.html'>limri.normtools.fslreorient2std</a></li>
+        <li><a href='limri.normtools.gzfile.html'>limri.normtools.gzfile</a></li>
+        <li><a href='limri.regtools.ants2affine.html'>limri.regtools.ants2affine</a></li>
+        <li><a href='limri.regtools.antsregister.html'>limri.regtools.antsregister</a></li>
+        <li><a href='limri.regtools.apply_transforms.html'>limri.regtools.apply_transforms</a></li>
+        <li><a href='limri.regtools.apply_translation.html'>limri.regtools.apply_translation</a></li>
+        <li><a href='limri.regtools.applywarp.html'>limri.regtools.applywarp</a></li>
+        <li><a href='limri.regtools.flirt.html'>limri.regtools.flirt</a></li>
+        <li><a href='limri.regtools.flirt2aff.html'>limri.regtools.flirt2aff</a></li>
+        <li><a href='limri.regtools.normalize2field.html'>limri.regtools.normalize2field</a></li>
+        <li><a href='limri.regtools.save_translation.html'>limri.regtools.save_translation</a></li>
+        <li><a href='limri.utils.info.html'>limri.utils.info</a></li>
+        <li><a href='limri.utils.logo.html'>limri.utils.logo</a></li>
+        <li><a href='limri.workflows.registration.applytrf.html'>limri.workflows.applytrf</a></li>
+        <li><a href='limri.workflows.registration.li2mni.html'>limri.workflows.li2mni</a></li>
+        <li><a href='limri.workflows.li2mni_all.html'>limri.workflows.li2mni_all</a></li>
+        <li><a href='limri.workflows.maskeyes.li2mnieyes.html'>limri.workflows.li2mnieyes</a></li>
+        <li><a href='limri.workflows.normalization.li2mninorm.html'>limri.workflows.li2mninorm</a></li>
+        <li><a href='limri.workflows.maskeyes.get_last_mode.html'>limri.workflows.maskeyes.get_last_mode</a></li>
+        <li><a href='limri.workflows.maskeyes.li2mnieyes.html'>limri.workflows.maskeyes.li2mnieyes</a></li>
+        <li><a href='limri.workflows.normalization.li2mninorm.html'>limri.workflows.normalization.li2mninorm</a></li>
+        <li><a href='limri.workflows.registration.applytrf.html'>limri.workflows.registration.applytrf</a></li>
+        <li><a href='limri.workflows.registration.li2mni.html'>limri.workflows.registration.li2mni</a></li>
+    </ul>

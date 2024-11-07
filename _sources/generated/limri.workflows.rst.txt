@@ -1,0 +1,53 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:orphan:
+
+API documentation of *limri.workflows*
+=======================================
+
+limri.workflows
+^^^^^^^^^^^^^^^
+
+Workflows definition.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.workflows.applytrf <limri.workflows.registration.applytrf.html>`_
+    * `limri.workflows.li2mni <limri.workflows.registration.li2mni.html>`_
+    * `limri.workflows.li2mni_all <limri.workflows.li2mni_all.html>`_
+    * `limri.workflows.li2mnieyes <limri.workflows.maskeyes.li2mnieyes.html>`_
+    * `limri.workflows.li2mninorm <limri.workflows.normalization.li2mninorm.html>`_
+
+limri.workflows.registration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Registration workflows definition.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.workflows.registration.applytrf <limri.workflows.registration.applytrf.html>`_
+    * `limri.workflows.registration.li2mni <limri.workflows.registration.li2mni.html>`_
+
+limri.workflows.maskeyes
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Eyes detection workflows definition.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.workflows.maskeyes.get_last_mode <limri.workflows.maskeyes.get_last_mode.html>`_
+    * `limri.workflows.maskeyes.li2mnieyes <limri.workflows.maskeyes.li2mnieyes.html>`_
+
+limri.workflows.normalization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Intensity normalization.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.workflows.normalization.li2mninorm <limri.workflows.normalization.li2mninorm.html>`_
+

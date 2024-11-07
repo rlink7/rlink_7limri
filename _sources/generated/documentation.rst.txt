@@ -1,0 +1,152 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+API documentation of LIMRI
+===========================
+
+This is the classes and functions reference in limri. Please refer to the gallery for further details, as the class and function raw specifications may not be enough to give full guidelines on their uses.
+
+.. raw:: html
+
+    <!-- Block section -->
+
+    <div class='container-fluid'>
+
+    <div class='float-left'>
+
+    <div class='row'>
+
+    <div class='col-md-4'>
+    <h3><a href='limri.html'>
+    limri
+    </a></h3>
+    <blockquote>
+        <p>Helper module for Lithium MRI pre-processing.</p>    </blockquote>
+    </div>
+    <div class='col-md-4'>
+    <h3><a href='limri.norm.html'>
+    limri.norm
+    </a></h3>
+    <blockquote>
+        <p>Normalization/calibration tools.</p>    </blockquote>
+    </div>
+    <div class='col-md-4'>
+    <h3><a href='limri.workflows.html'>
+    limri.workflows
+    </a></h3>
+    <blockquote>
+        <p>Workflows definition.</p>    </blockquote>
+    </div>
+
+    </div>
+    <div class='row'>
+    </div>
+    </div>
+    </div>
+
+.. rst-class:: documentation-contents
+
+  **Contents**:
+    * `limri <limri.html>`_
+        .. hidden-technical-block::
+          :label: [+ show/hide members]
+          :starthidden: true
+
+          `limri.info <limri.utils.info.html>`_
+
+          `limri.utils.info <limri.utils.info.html>`_
+
+          `limri.utils.logo <limri.utils.logo.html>`_
+
+          `limri.regtools.ants2affine <limri.regtools.ants2affine.html>`_
+
+          `limri.regtools.antsregister <limri.regtools.antsregister.html>`_
+
+          `limri.regtools.apply_transforms <limri.regtools.apply_transforms.html>`_
+
+          `limri.regtools.apply_translation <limri.regtools.apply_translation.html>`_
+
+          `limri.regtools.applywarp <limri.regtools.applywarp.html>`_
+
+          `limri.regtools.flirt <limri.regtools.flirt.html>`_
+
+          `limri.regtools.flirt2aff <limri.regtools.flirt2aff.html>`_
+
+          `limri.regtools.normalize2field <limri.regtools.normalize2field.html>`_
+
+          `limri.regtools.save_translation <limri.regtools.save_translation.html>`_
+
+          `limri.normtools.fast <limri.normtools.fast.html>`_
+
+          `limri.normtools.fslreorient2std <limri.normtools.fslreorient2std.html>`_
+
+          `limri.normtools.gzfile <limri.normtools.gzfile.html>`_
+
+          `limri.color_utils.colored <limri.color_utils.colored.html>`_
+
+          `limri.color_utils.HEX <limri.color_utils.HEX.html>`_
+
+          `limri.color_utils.attr <limri.color_utils.attr.html>`_
+
+          `limri.color_utils.fg <limri.color_utils.fg.html>`_
+
+          `limri.color_utils.print_multicolor <limri.color_utils.print_multicolor.html>`_
+
+          `limri.color_utils.print_result <limri.color_utils.print_result.html>`_
+
+          `limri.color_utils.print_subtitle <limri.color_utils.print_subtitle.html>`_
+
+          `limri.color_utils.print_title <limri.color_utils.print_title.html>`_
+
+          `limri.color_utils.print_warning <limri.color_utils.print_warning.html>`_
+
+          `limri.color_utils.random_stylize <limri.color_utils.random_stylize.html>`_
+
+          `limri.color_utils.stylize <limri.color_utils.stylize.html>`_
+
+          `limri.denoising.nlm_denoising <limri.denoising.nlm_denoising.html>`_
+
+    * `limri.norm <limri.norm.html>`_
+        .. hidden-technical-block::
+          :label: [+ show/hide members]
+          :starthidden: true
+
+          `limri.norm.hist_matching <limri.norm.hist.hist_matching.html>`_
+
+          `limri.norm.minmax_matching <limri.norm.minmax.minmax_matching.html>`_
+
+          `limri.norm.norm <limri.norm.minmax.norm.html>`_
+
+          `limri.norm.hist._hist_matching <limri.norm.hist._hist_matching.html>`_
+
+          `limri.norm.hist.hist_matching <limri.norm.hist.hist_matching.html>`_
+
+          `limri.norm.minmax.minmax_matching <limri.norm.minmax.minmax_matching.html>`_
+
+          `limri.norm.minmax.norm <limri.norm.minmax.norm.html>`_
+
+    * `limri.workflows <limri.workflows.html>`_
+        .. hidden-technical-block::
+          :label: [+ show/hide members]
+          :starthidden: true
+
+          `limri.workflows.applytrf <limri.workflows.registration.applytrf.html>`_
+
+          `limri.workflows.li2mni <limri.workflows.registration.li2mni.html>`_
+
+          `limri.workflows.li2mni_all <limri.workflows.li2mni_all.html>`_
+
+          `limri.workflows.li2mnieyes <limri.workflows.maskeyes.li2mnieyes.html>`_
+
+          `limri.workflows.li2mninorm <limri.workflows.normalization.li2mninorm.html>`_
+
+          `limri.workflows.registration.applytrf <limri.workflows.registration.applytrf.html>`_
+
+          `limri.workflows.registration.li2mni <limri.workflows.registration.li2mni.html>`_
+
+          `limri.workflows.maskeyes.get_last_mode <limri.workflows.maskeyes.get_last_mode.html>`_
+
+          `limri.workflows.maskeyes.li2mnieyes <limri.workflows.maskeyes.li2mnieyes.html>`_
+
+          `limri.workflows.normalization.li2mninorm <limri.workflows.normalization.li2mninorm.html>`_
+
+

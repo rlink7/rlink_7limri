@@ -1,0 +1,41 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:orphan:
+
+API documentation of *limri.norm*
+==================================
+
+limri.norm
+^^^^^^^^^^
+
+Normalization/calibration tools.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.norm.hist_matching <limri.norm.hist.hist_matching.html>`_
+    * `limri.norm.minmax_matching <limri.norm.minmax.minmax_matching.html>`_
+    * `limri.norm.norm <limri.norm.minmax.norm.html>`_
+
+limri.norm.hist
+^^^^^^^^^^^^^^^
+
+Histogram matching.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.norm.hist._hist_matching <limri.norm.hist._hist_matching.html>`_
+    * `limri.norm.hist.hist_matching <limri.norm.hist.hist_matching.html>`_
+
+limri.norm.minmax
+^^^^^^^^^^^^^^^^^
+
+MinMax matching.
+
+.. rst-class:: documentation-contents
+
+  **Functions**:
+    * `limri.norm.minmax.minmax_matching <limri.norm.minmax.minmax_matching.html>`_
+    * `limri.norm.minmax.norm <limri.norm.minmax.norm.html>`_
+
