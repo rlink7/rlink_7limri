@@ -1,3 +1,0 @@
-export PYTHONPATH=$PYTHONPATH:$HOME/git/rlink_7limri
-cd $HOME/git/pysphinxdoc; rm -r $HOME/git/rlink_7limri/tmp/doc/*; python3 pysphinxdoc/sphinxdoc -v 2 -p $HOME/git/rlink_7limri -n limri -o $HOME/git/rlink_7limri/tmp/doc
-cd $HOME/git/rlink_7limri/tmp/doc; make raw-html

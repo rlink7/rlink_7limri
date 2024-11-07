@@ -5,4 +5,5 @@ numpy
 nibabel
 antspyx
 dipy
+scikit-learn
 sphinx==3.5.4

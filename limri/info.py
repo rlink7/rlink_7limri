@@ -68,7 +68,8 @@ REQUIRES = [
     "numpy",
     "nibabel",
     "antspyx",
-    "dipy"
+    "dipy",
+    "scikit-learn"
 ]
 SCRIPTS = [
     "limri/scripts/limri"

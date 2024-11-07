@@ -4,7 +4,7 @@
 
 **Development**
 
-|Pep8|_ |Doc|_ |ExtraDoc|_
+|Pep8|_ |Doc|_
 
 **Release**
 
@@ -19,9 +19,6 @@
 
 .. |Doc| image:: https://github.com/rlink7/rlink_7limri/actions/workflows/documentation.yml/badge.svg
 .. _Doc: https://github.com/rlink7/rlink_7limri/actions
-
-.. |ExtraDoc| image:: https://readthedocs.org/projects/limri/badge/?version=latest
-.. _ExtraDoc: https://limri.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPi| image:: https://badge.fury.io/py/limri.svg
 .. _PyPi: https://badge.fury.io/py/limri
