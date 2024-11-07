@@ -66,10 +66,13 @@ VERSION = __version__
 PROVIDES = ["limri"]
 REQUIRES = [
     "numpy",
+    "scipy",
     "nibabel",
     "antspyx",
     "dipy",
-    "scikit-learn"
+    "scikit-learn",
+    "scikit-image",
+    "matplotlib"
 ]
 SCRIPTS = [
     "limri/scripts/limri"
